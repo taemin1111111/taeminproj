@@ -1,0 +1,48 @@
+.form-container {
+    max-width: 500px;
+    margin: 0 auto;
+    background: #ffffff;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+.form-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.info-box { margin-bottom: 30px; }
+.info-item label {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.info-value {
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    color: #555;
+}
+
+.submit-btn-custom {
+    width: 100%;
+    padding: 14px;
+    background: #ff5ca2;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.submit-btn-custom:hover {
+    background: #e04080;
+}

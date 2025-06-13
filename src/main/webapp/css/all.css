@@ -1,0 +1,121 @@
+/* ✅ 전체 기본 스타일 */
+body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background-color: #2f2f2f;  /* 메인 밝은 회색 배경 */
+    color: #222;
+    margin: 0;
+    padding: 0;
+}
+
+/* ✅ 메인 전체 구조 - 가운데 정렬 */
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* ✅ 중앙 콘텐츠 정렬 (예전 방식 유지용) */
+.centered-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+/* ✅ 섹션 타이틀 */
+.section-title {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    color: #f5f5f5;  /* 밝은 회색, 다크 배경 대비 좋음 */
+}
+.section-title img {
+    width: 22px;
+    margin-right: 8px;
+}
+
+/* ✅ 카드 박스 공통 */
+.card-box {
+    background-color: #f6f6f6; 
+    border-radius: 10px;
+    padding: 20px;
+    color: #333;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.card-box:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+}
+
+/* ✅ 지도 박스 (기타 용도) */
+.map-box {
+    background-color: #eaeaea;
+    border-radius: 10px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    font-size: 1rem;
+}
+
+/* ✅ 링크 스타일 */
+a {
+    color: #ff4d94;
+    text-decoration: none;
+}
+a:hover {
+    color: #ff78ac;
+    text-decoration: underline;
+}
+
+/* ✅ 작은 설명 텍스트 */
+.text-muted-small {
+    font-size: 0.85rem;
+    color: #777 !important;
+}
+
+/* ✅ 구(시군구) 제목 */
+.card-box .fw-bold {
+    font-size: 1.1rem;
+    color: #222;
+}
+
+/* ✅ 동네 리스트 */
+.card-box ul {
+    padding-left: 0;
+    margin-bottom: 0;
+}
+.card-box li {
+    margin-bottom: 12px;
+    list-style: none;
+}
+.card-box a {
+    display: inline-block;
+    padding: 4px 6px;
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+.card-box a:hover {
+    background-color: #ffe6f0;
+    color: #d63384;
+}
+
+/* ✅ collapse 버튼 마진 통일 */
+button[data-bs-toggle="collapse"] {
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+/* ✅ 후기 테이블 반응형 */
+.table-responsive {
+    margin-top: 15px;
+}
+hr.divider {
+  border: none;
+  border-top: 1px solid var(--divider);
+  margin: 16px 0;
+}
+

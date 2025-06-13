@@ -1,0 +1,74 @@
+/* ✅ 후기 작성 모달 전체 컨테이너 */
+.modal-review {
+    background-color: #1e1e1e;
+    color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
+}
+
+/* ✅ 모달 제목 (헤더는 제거되었으므로 h5만 스타일링) */
+.modal-review h5 {
+    font-weight: bold;
+    color: #ff6b81;
+    padding: 16px 20px 0 20px;
+    margin-bottom: 0;
+}
+
+/* ✅ 모달 본문 */
+.modal-review .modal-body {
+    padding: 20px;
+    background-color: #1e1e1e;
+}
+
+.modal-review .form-label {
+    font-weight: 600;
+    margin-bottom: 4px;
+    color: #ddd;
+}
+
+.modal-review .form-control,
+.modal-review .form-select {
+    background-color: #2e2e2e;
+    color: #fff;
+    border: 1px solid #555;
+}
+
+.modal-review .form-control::placeholder {
+    color: #888;
+}
+
+/* ✅ 모달 하단 버튼 영역 */
+.modal-review .modal-footer {
+    background-color: #2b2b2b;
+    border-top: 1px solid #444;
+}
+
+/* ✅ 버튼 */
+.modal-review .btn-primary {
+    background-color: #ff6b81;
+    border-color: #ff6b81;
+}
+
+.modal-review .btn-primary:hover {
+    background-color: #ff4d68;
+    border-color: #ff4d68;
+}
+
+.modal-review .btn-secondary {
+    background-color: #444;
+    border-color: #555;
+    color: #ddd;
+}
+
+.modal-review .btn-secondary:hover {
+    background-color: #555;
+    border-color: #666;
+}
+
+/* ✅ 반응형 */
+@media (max-width: 576px) {
+    .modal-review .modal-dialog {
+        margin: 1rem;
+    }
+}
