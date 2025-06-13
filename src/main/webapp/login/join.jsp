@@ -44,9 +44,19 @@
             <input type="text" name="phone" class="form-control" placeholder="휴대폰번호" required>
         </div>
 
-        <!-- 이메일 -->
+        <!-- 이메일 (이메일 필수 + 인증코드 발송) -->
         <div class="mb-3">
-            <input type="email" name="email" class="form-control" placeholder="이메일 (선택)">
+            <div class="input-group">
+                <input type="email" name="email" id="email" class="form-control" placeholder="이메일" required>
+                <button type="button" class="btn btn-outline-primary" onclick="sendEmailCode()">인증요청</button>
+            </div>
+            <div id="emailResult" class="mt-1 small"></div>
+        </div>
+
+        <!-- 이메일 인증코드 입력 -->
+        <div class="mb-3">
+            <input type="text" id="emailCodeInput" class="form-control" placeholder="이메일 인증코드 입력">
+            <div id="emailCodeResult" class="mt-1 small"></div>
         </div>
 
         <!-- 생년월일 -->
@@ -74,19 +84,42 @@
 </div>
 
 <script>
-// ✅ 아이디 중복확인 (서버연결은 나중에 AJAX로 추가)
+// ✅ 아이디 중복확인 (AJAX 연결)
 function checkId() {
-    const userid = document.getElementById("userid").value;
+    const userid = document.getElementById("userid").value.trim();
     if(userid.length < 4) {
         document.getElementById("idCheckResult").textContent = "아이디는 최소 4자 이상 입력해주세요.";
         document.getElementById("idCheckResult").style.color = "red";
         return;
     }
-    document.getElementById("idCheckResult").textContent = "사용가능한 아이디입니다.";
-    document.getElementById("idCheckResult").style.color = "green";
+    fetch("<%=root%>/login/idCheck.jsp?userid=" + encodeURIComponent(userid))
+        .then(res => res.text())
+        .then(result => {
+            if (result.trim() === "ok") {
+                document.getElementById("idCheckResult").textContent = "사용가능한 아이디입니다.";
+                document.getElementById("idCheckResult").style.color = "green";
+            } else {
+                document.getElementById("idCheckResult").textContent = "이미 사용중인 아이디입니다.";
+                document.getElementById("idCheckResult").style.color = "red";
+            }
+        });
 }
 
-// ✅ 비밀번호 보안규칙 검사
+// ✅ 이메일 인증 (API 자리만 만들어 놓음)
+function sendEmailCode() {
+    const email = document.getElementById("email").value.trim();
+    if(email === "") {
+        document.getElementById("emailResult").innerText = "이메일을 입력하세요.";
+        document.getElementById("emailResult").style.color = "red";
+        return;
+    }
+    // 👉 여기서 실제 이메일 전송 API 연동 가능!
+    // 지금은 그냥 성공 가정
+    document.getElementById("emailResult").innerText = "인증코드가 발송되었습니다.";
+    document.getElementById("emailResult").style.color = "green";
+}
+
+// ✅ 비밀번호 검증
 const pwInput = document.getElementById('passwd');
 const pwRuleResult = document.getElementById('pwRuleResult');
 pwInput.addEventListener("input", function() {
@@ -102,7 +135,7 @@ pwInput.addEventListener("input", function() {
     }
 });
 
-// ✅ 비밀번호 일치 검사 (이제 깔끔하게 수정된 부분)
+// ✅ 비밀번호 일치검사
 const pwConfirmInput = document.getElementById('passwdConfirm');
 const pwCheckResult = document.getElementById('pwCheckResult');
 pwConfirmInput.addEventListener("input", function() {
@@ -119,7 +152,7 @@ pwConfirmInput.addEventListener("input", function() {
     }
 });
 
-// ✅ 전송 전 최종검증
+// ✅ 최종 submit 전 검증
 function checkBeforeSubmit() {
     if (pwRuleResult.style.color !== "green" || pwCheckResult.style.color !== "green") {
         alert("비밀번호 조건 또는 비밀번호 확인을 다시 확인하세요.");

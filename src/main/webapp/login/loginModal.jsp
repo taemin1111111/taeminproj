@@ -44,7 +44,7 @@
 
                         <div class="d-flex justify-content-center my-3">
                             <a href="https://nid.naver.com/oauth2.0/authorize?response_type=code&client_id=Uhipu8CFRcKrmTNw5xie&redirect_uri=http%3A%2F%2Flocalhost%3A8083%2Fhotplace%2Flogin%2FnaverCallback.jsp&state=random_state" target="_blank" >
-                                <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인" style="width: 250px; height: auto;">
+                                <img src="https://static.nid.naver.com/oauth/small_g_in.PNG" alt="네이버 로그인" style="width: 300px; height: 50px;">
                             </a>
                         </div>
                     </div>

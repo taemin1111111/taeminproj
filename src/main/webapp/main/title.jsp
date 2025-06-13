@@ -1,6 +1,7 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%
     String root = request.getContextPath();
+    String loginId = (String)session.getAttribute("loginid");
 %>
 
 <!-- ✅ title.jsp - 상단 헤더 영역 -->
@@ -50,11 +51,25 @@
             </ul>
         </nav>
 
-        <!-- 🙋 로그인/회원가입 -->
+        <!-- 🙋 로그인/회원가입 or 마이페이지 -->
         <div class="ms-3">
-            <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                로그인 / 회원가입
-            </a>
+            <% if(loginId == null) { %>
+                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+                    로그인 / 회원가입
+                </a>
+            <% } else { %>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                        <%= loginId %>님
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="<%=root%>/mypage/mypage.jsp">마이페이지</a></li>
+                        <li><a class="dropdown-item" href="<%=root%>/qna/qna.jsp">1:1 질문하기</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="<%=root%>/login/logout.jsp">로그아웃</a></li>
+                    </ul>
+                </div>
+            <% } %>
         </div>
     </div>
 </header>
