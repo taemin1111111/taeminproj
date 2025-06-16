@@ -2,7 +2,9 @@
 <%
     String root = request.getContextPath();
     String loginId = (String)session.getAttribute("loginid");
+    String nickname = (String)session.getAttribute("nickname");  // 닉네임 세션 추가!
 %>
+
 
 <!-- ✅ title.jsp - 상단 헤더 영역 -->
 <header style="background-color: #1a1a1a;" class="text-white py-3 px-4 shadow-sm">
@@ -52,25 +54,32 @@
         </nav>
 
         <!-- 🙋 로그인/회원가입 or 마이페이지 -->
-        <div class="ms-3">
-            <% if(loginId == null) { %>
-                <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
-                    로그인 / 회원가입
-                </a>
-            <% } else { %>
-                <div class="btn-group">
-                    <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
-                        <%= loginId %>님
-                    </button>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="<%=root%>/mypage/mypage.jsp">마이페이지</a></li>
-                        <li><a class="dropdown-item" href="<%=root%>/qna/qna.jsp">1:1 질문하기</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="<%=root%>/login/logout.jsp">로그아웃</a></li>
-                    </ul>
-                </div>
-            <% } %>
+     <div class="ms-3">
+    <% if(loginId == null) { %>
+        <a href="#" data-bs-toggle="modal" data-bs-target="#loginModal">
+            로그인 / 회원가입
+        </a>
+    <% } else { 
+        String iconClass = "bi-person-fill";  // 기본 아이콘 (사람)
+        if("관리자".equals(nickname)) {  // 닉네임이 "관리자"면 톱니바퀴
+            iconClass = "bi-gear-fill";
+        }
+    %>
+        <div class="btn-group">
+            <button type="button" class="btn btn-outline-light dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="bi <%=iconClass%> me-1"></i> <%= nickname %>님
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+                <li><a class="dropdown-item" href="<%=root%>/mypage/mypage.jsp">마이페이지</a></li>
+                <li><a class="dropdown-item" href="<%=root%>/qna/qna.jsp">1:1 질문하기</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="<%=root%>/login/logout.jsp">로그아웃</a></li>
+            </ul>
         </div>
+    <% } %>
+</div>
+
+
     </div>
 </header>
 

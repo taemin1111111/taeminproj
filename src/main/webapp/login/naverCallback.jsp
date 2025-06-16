@@ -1,9 +1,10 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@page import="org.json.JSONObject"%>
-<%@ page import="java.net.*, java.io.*, Member.MemberDAO, DB.DbConnect" %>
+<%@ page import="org.json.JSONObject" %>
+<%@ page import="java.net.*, java.io.*" %>
+<%@ page import="Member.MemberDAO, Member.MemberDTO, DB.DbConnect" %>
 
 <%
-request.setCharacterEncoding("UTF-8");    
+request.setCharacterEncoding("UTF-8");
 String root = request.getContextPath();
 
 String clientId = "Uhipu8CFRcKrmTNw5xie";
@@ -25,7 +26,7 @@ String tokenUrl = "https://nid.naver.com/oauth2.0/token"
     + "&state=" + state;
 
 URL url = new URL(tokenUrl);
-HttpURLConnection con = (HttpURLConnection)url.openConnection();
+HttpURLConnection con = (HttpURLConnection) url.openConnection();
 con.setRequestMethod("GET");
 
 BufferedReader br = new BufferedReader(new InputStreamReader(con.getInputStream(), "UTF-8"));
@@ -40,7 +41,7 @@ String access_token = tokenJson.getString("access_token");
 // ② 사용자 프로필 요청
 String apiURL2 = "https://openapi.naver.com/v1/nid/me";
 URL url2 = new URL(apiURL2);
-HttpURLConnection con2 = (HttpURLConnection)url2.openConnection();
+HttpURLConnection con2 = (HttpURLConnection) url2.openConnection();
 con2.setRequestMethod("GET");
 con2.setRequestProperty("Authorization", "Bearer " + access_token);
 
@@ -59,17 +60,18 @@ String gender = responseJson.optString("gender");
 String birthyear = responseJson.optString("birthyear");
 String birthday = responseJson.optString("birthday");
 
-// ③ DB에서 이미 회원인지 확인
+// ③ DB 확인 및 처리
 MemberDAO dao = new MemberDAO();
 boolean exists = dao.isDuplicateId(naverId);
 
 if (exists) {
-    // 👉 이미 회원이면 로그인
+    // 이미 회원이라면 → 닉네임도 불러와서 세션 저장
+    MemberDTO dto = dao.getMember(naverId);
     session.setAttribute("loginid", naverId);
-   
+    session.setAttribute("nickname", dto.getNickname());
     response.sendRedirect(root + "/index.jsp");
 } else {
-    // 👉 아직 회원가입 안했으면 네이버 정보 세션저장 → 회원가입 폼으로 이동
+    // 회원가입 안한 사람 → 네이버 정보 세션 저장 후 회원가입으로 이동
     session.setAttribute("naverId", naverId);
     session.setAttribute("name", name);
     session.setAttribute("email", email);

@@ -113,4 +113,56 @@ public class ReviewDao {
         }
         return count;
     }
+    public boolean insertReview(ReviewDto dto) {
+        boolean success = false;
+        String sql = "INSERT INTO review (userid, nickname, content, stars, hg_id, type, good, writeday, category_id, passwd) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, 0, NOW(), ?, ?)";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, dto.getUserid());
+            pstmt.setString(2, dto.getNickname());
+            pstmt.setString(3, dto.getContent());
+            pstmt.setDouble(4, dto.getStars());
+            pstmt.setString(5, dto.getHg_id());
+            pstmt.setString(6, dto.getType());
+            pstmt.setInt(7, dto.getCategory_id());
+            pstmt.setString(8, dto.getPasswd());
+
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return success;
+    }
+    public boolean isAlreadyExist(String userid, String hg_id, int category_id) {
+        boolean result = false;
+        Connection conn = db.getConnection();
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+
+        String sql = "SELECT COUNT(*) FROM review WHERE userid=? AND hg_id=? AND category_id=?";
+
+        try {
+            pstmt = conn.prepareStatement(sql);
+            pstmt.setString(1, userid);
+            pstmt.setString(2, hg_id);
+            pstmt.setInt(3, category_id);
+            rs = pstmt.executeQuery();
+            if(rs.next() && rs.getInt(1) > 0) {
+                result = true;
+            }
+        } catch(Exception e) {
+            e.printStackTrace();
+        } finally {
+            db.dbClose(rs, pstmt, conn);
+        }
+        return result;
+    }
+
+    
 }

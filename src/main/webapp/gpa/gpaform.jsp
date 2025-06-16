@@ -21,7 +21,7 @@
         <button class="btn btn-outline-light" type="button"><i class="bi bi-search"></i></button>
     </div>
 
-    <!-- ✅ 지역 리스트 출력 -->
+    <!-- 지역 리스트 출력 -->
     <%
         for (String sido : regionMap.keySet()) {
             String collapseId = "collapse_" + sido;
@@ -40,7 +40,7 @@
                         for (String sigungu : sigunguMap.keySet()) {
                     %>
                         <div class="col-md-3 mb-3">
-                            <!-- ✅ 시군구 클릭 시 전체 -->
+                            <!--  시군구 클릭 시 전체 -->
                             <div class="fw-bold mb-2">
                                 <a href="#" class="text-dark text-decoration-none"
                                    onclick="loadRegionData('<%=sigungu%>', true)">
@@ -65,11 +65,11 @@
         </div>
     <% } %>
 
-    <!-- ✅ 선택된 지역 정보 박스 -->
+    <!--  선택된 지역 정보 박스 -->
     <div id="result-box" class="mt-5"></div>
 </div>
 
-<!-- ✅ AJAX 스크립트 -->
+<!--  AJAX 스크립트 -->
 <script>
 function loadRegionData(region, isSigungu) {
     const url = '<%=root%>/gpa/getRegionData.jsp?region=' + encodeURIComponent(region) + '&isSigungu=' + isSigungu;

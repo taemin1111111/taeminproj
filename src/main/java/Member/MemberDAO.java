@@ -1,6 +1,7 @@
 package Member;
 
 import java.sql.*;
+import java.util.Date;
 import DB.DbConnect;
 
 public class MemberDAO {
@@ -69,7 +70,8 @@ public class MemberDAO {
         }
         return duplicate;
     }
- // 이메일 중복확인
+
+    // 이메일 중복확인
     public boolean isDuplicateEmail(String email) {
         boolean duplicate = false;
         String sql = "SELECT COUNT(*) FROM member WHERE email=?";
@@ -85,6 +87,37 @@ public class MemberDAO {
             e.printStackTrace();
         }
         return duplicate;
+    }
+
+    // ✅ 회원 정보 가져오기 (닉네임 조회용)
+    public MemberDTO getMember(String userid) {
+        MemberDTO dto = null;
+        String sql = "SELECT * FROM member WHERE userid=?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, userid);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                dto = new MemberDTO();
+                dto.setUserid(rs.getString("userid"));
+                dto.setPasswd(rs.getString("passwd"));
+                dto.setName(rs.getString("name"));
+                dto.setNickname(rs.getString("nickname"));
+                dto.setPhone(rs.getString("phone"));
+                dto.setEmail(rs.getString("email"));
+                dto.setGender(rs.getString("gender"));
+                dto.setBirth(rs.getDate("birth"));
+                dto.setProvider(rs.getString("provider"));
+                dto.setStatus(rs.getString("status"));
+                dto.setRegdate(rs.getTimestamp("regdate"));
+                dto.setUpdate_date(rs.getTimestamp("update_date"));
+            }
+            rs.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return dto;
     }
 
 }

@@ -28,7 +28,9 @@ public class ReviewDto {
         return userid;
     }
 
-    public void setUserid(String userid) {
+  
+
+	public void setUserid(String userid) {
         this.userid = userid;
     }
 
