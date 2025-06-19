@@ -1,6 +1,9 @@
 package review;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
+
 import DB.DbConnect;
 
 public class ReviewDao {
@@ -162,6 +165,39 @@ public class ReviewDao {
             db.dbClose(rs, pstmt, conn);
         }
         return result;
+    }
+   //평점 리스트 뽑기
+    public List<ReviewDto> getReviews(String hg_id, boolean isSigungu) {
+        List<ReviewDto> list = new ArrayList<>();
+        String sql = isSigungu
+            ? "SELECT * FROM review WHERE hg_id IN (SELECT dong FROM place_info WHERE sigungu = ?) ORDER BY writeday DESC"
+            : "SELECT * FROM review WHERE hg_id = ? ORDER BY writeday DESC";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+
+            pstmt.setString(1, hg_id);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                ReviewDto dto = new ReviewDto();
+                dto.setNum(rs.getInt("num"));
+                dto.setUserid(rs.getString("userid"));
+                dto.setNickname(rs.getString("nickname"));
+                dto.setContent(rs.getString("content"));
+                dto.setStars(rs.getDouble("stars"));
+                dto.setHg_id(rs.getString("hg_id"));
+                dto.setCategory_id(rs.getInt("category_id"));
+                dto.setPasswd(rs.getString("passwd"));
+                dto.setWriteday(rs.getTimestamp("writeday"));
+                dto.setGood(rs.getInt("good"));
+                dto.setType(rs.getString("type"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        return list;
     }
 
     

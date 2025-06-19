@@ -26,7 +26,8 @@
                         📌 핫플 평점보기
                     </a>
                     <ul class="dropdown-menu text-start">
-                        <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=gpa/gpaform.jsp">지역별 평점 보기</a></li>
+                       <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=review/gpaform.jsp">지역별 평점 보기</a></li>
+
                     </ul>
                 </li>
 
