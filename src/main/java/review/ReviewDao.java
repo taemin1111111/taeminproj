@@ -199,6 +199,38 @@ public class ReviewDao {
 
         return list;
     }
+ // ReviewDao.java
+    public List<ReviewDto> getReviews(String hg_id, boolean isSigungu, int category_id) {
+        List<ReviewDto> list = new ArrayList<>();
+        String sql = isSigungu
+          ? "SELECT * FROM review WHERE hg_id IN (SELECT dong FROM place_info WHERE sigungu = ?) AND category_id = ? ORDER BY writeday DESC"
+          : "SELECT * FROM review WHERE hg_id = ? AND category_id = ? ORDER BY writeday DESC";
+
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, hg_id);
+            pstmt.setInt(2, category_id);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                ReviewDto dto = new ReviewDto();
+                // dto 필드 매핑 (기존 getReviews와 동일)
+                dto.setNum(rs.getInt("num"));
+                dto.setUserid(rs.getString("userid"));
+                dto.setNickname(rs.getString("nickname"));
+                dto.setContent(rs.getString("content"));
+                dto.setStars(rs.getDouble("stars"));
+                dto.setHg_id(rs.getString("hg_id"));
+                dto.setCategory_id(rs.getInt("category_id"));
+                dto.setGood(rs.getInt("good"));
+                dto.setWriteday(rs.getTimestamp("writeday"));
+                dto.setType(rs.getString("type"));
+                list.add(dto);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
 
     
 }
