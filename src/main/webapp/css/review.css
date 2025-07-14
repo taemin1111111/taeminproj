@@ -111,50 +111,99 @@
   color: white;
   border-color: #ff69b4;
 }
-:root {
-  --filter-bg:        #eee;
-  --filter-color:     #fff;
-  --filter-border:    #ccc;
-  --filter-active-bg: #ff69b4;
-}
 
-/* 커스텀 필터 버튼 */
-button.custom-filter {
+/* ---- filter-btn 토스 스타일 ---- */
+button.filter-btn {
   display: inline-block;
-  padding: 6px 16px;
-  border-radius: 50px;
-  background: var(--filter-bg) !important;
-  color: var(--filter-color) !important;
-  border: 1px solid var(--filter-border) !important;
-  position: relative;
+  padding: 8px 16px 8px 35px; /* 더 작게 */
+  border-radius: 8px; /* 토스 스타일: 각진 모서리 */
+  background: #ffffff; /* 토스 스타일: 흰색 배경 */
+  color: #333333; /* 토스 스타일: 진한 회색 글씨 */
+  border: 1px solid #e1e5e9; /* 토스 스타일: 연한 회색 테두리 */
+  font-weight: 500; /* 토스 스타일: 중간 굵기 */
+  font-size: 0.9rem; /* 토스 스타일: 작은 글씨 */
+  letter-spacing: 0.01em;
+  text-align: center; /* 글자 가운데 정렬 */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* 토스 스타일: 부드러운 그림자 */
+  transition: 
+    background 0.15s, 
+    color 0.15s, 
+    border-color 0.15s, 
+    box-shadow 0.15s;
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  outline: none;
+  position: relative;
 }
 
-/* 체크 아이콘 */
-button.custom-filter::before {
+/* 버튼 크기 줄이려면: padding 값을 줄이세요 */
+/* 예시: padding: 8px 16px 8px 35px; (더 작게) */
+/* 예시: padding: 6px 12px 6px 30px; (더 작게) */
+
+/* V 체크 아이콘 추가 */
+button.filter-btn[data-active="true"]::before {
   content: '✔';
   position: absolute;
-  left: 12px;
+  left: 16px;
   top: 50%;
   transform: translateY(-50%);
+  font-size: 1.1em;
+  color: #fff;
+  opacity: 1;
+  transition: opacity 0.18s;
+  pointer-events: none;
+}
+
+button.filter-btn::before {
+  content: '';
   opacity: 0;
-  transition: opacity 0.2s;
 }
 
-/* 활성 상태 */
-button.custom-filter[data-active="true"] {
-  background: var(--filter-active-bg) !important;
-}
-button.custom-filter[data-active="true"]::before {
-  opacity: 1 !important;
+button.filter-btn[data-active="true"] {
+  background: linear-gradient(90deg, #ff69b4 0%, #ffb6d5 100%); /* 핑크 그라데이션 */
+  color: #fff;
+  border-color: #ff69b4;
+  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.15);
 }
 
-/* 호버 */
-button.custom-filter:hover {
-  background: var(--filter-active-bg) !important;
-  color: var(--filter-color) !important;
+button.filter-btn:hover,
+button.filter-btn:focus {
+  background: #f8f9fa; /* 토스 스타일: 연한 회색 */
+  color: #333;
+  border-color: #ff69b4; /* 핑크 유지 */
 }
+
+button.filter-btn[data-active="true"]:hover,
+button.filter-btn[data-active="true"]:focus {
+  background: linear-gradient(90deg, #ff69b4 0%, #ffb6d5 100%); /* 핑크 그라데이션 */
+  color: #fff;
+  border-color: #ff69b4;
+  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
+}
+
+button.filter-btn:active {
+  transform: scale(0.97);
+}
+
+/* ---- "아직 등록된 후기가 없습니다" 메시지 토스 스타일 ---- */
+.text-muted {
+  color: #333333; /* 진한 회색으로 변경해서 잘 보이게 */
+  font-size: 0.9rem;
+  text-align: center;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  margin: 20px 0;
+  font-weight: 400;
+}
+
+/* ---- 후기 수 스타일 ---- */
+.card-box .text-muted.small {
+  color: #666666;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  font-weight: 400;
+}
+
 
 
 

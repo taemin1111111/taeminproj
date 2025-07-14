@@ -59,9 +59,11 @@
     <% } %>
     <span class="ms-2 small">(<%= String.format("%.1f", avg) %>)</span>
   </div>
-  <p class="text-muted small mb-0">
-    후기 수: <%= count %>건
-  </p>
+  <div class="mt-2">
+    <p class="text-muted small mb-0">
+      후기 수: <%= count %>건
+    </p>
+  </div>
 </div>
 
 <!-- 2️⃣ 카테고리 필터 버튼 -->
