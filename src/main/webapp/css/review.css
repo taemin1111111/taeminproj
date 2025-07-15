@@ -1,211 +1,232 @@
-/* ✅ 후기 작성 모달 전체 컨테이너 */
-.modal-review {
-    background-color: #1e1e1e;
-    color: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
+/* Glassmorphism + 네온 포인트 + 부드러운 다크모드 스타일 */
+
+body {
+  background: linear-gradient(135deg, #181c24 0%, #23243a 100%);
+  color: #e0e0e0;
+  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
 }
 
-/* ✅ 모달 제목 (헤더는 제거되었으므로 h5만 스타일링) */
-.modal-review h5 {
-    font-weight: bold;
-    color: #ff6b81;
-    padding: 16px 20px 0 20px;
-    margin-bottom: 0;
+.rating-summary-box {
+  background: rgba(30, 32, 40, 0.85);
+  border-radius: 22px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+  backdrop-filter: blur(8px);
+  border: 1.5px solid rgba(255,255,255,0.08);
+  padding: 38px 32px 28px 32px;
+  color: #f8f8f8;
+  margin-bottom: 38px;
+  position: relative;
+  overflow: hidden;
 }
-
-/* ✅ 모달 본문 */
-.modal-review .modal-body {
-    padding: 20px;
-    background-color: #1e1e1e;
+.rating-summary-box::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 22px;
+  background: linear-gradient(120deg, #ff69b4 0%, #5f7fff 100%);
+  opacity: 0.08;
+  z-index: 0;
 }
-
-.modal-review .form-label {
-    font-weight: 600;
-    margin-bottom: 4px;
-    color: #ddd;
-}
-
-.modal-review .form-control,
-.modal-review .form-select {
-    background-color: #2e2e2e;
-    color: #fff;
-    border: 1px solid #555;
-}
-
-.modal-review .form-control::placeholder {
-    color: #888;
-}
-
-/* ✅ 모달 하단 버튼 영역 */
-.modal-review .modal-footer {
-    background-color: #2b2b2b;
-    border-top: 1px solid #444;
-}
-
-/* ✅ 버튼 */
-.modal-review .btn-primary {
-    background-color: #ff6b81;
-    border-color: #ff6b81;
-}
-
-.modal-review .btn-primary:hover {
-    background-color: #ff4d68;
-    border-color: #ff4d68;
-}
-
-.modal-review .btn-secondary {
-    background-color: #444;
-    border-color: #555;
-    color: #ddd;
-}
-
-.modal-review .btn-secondary:hover {
-    background-color: #555;
-    border-color: #666;
-}
-
-/* ✅ 반응형 */
-@media (max-width: 576px) {
-    .modal-review .modal-dialog {
-        margin: 1rem;
-    }
-}
-.review-card {
-  background: #fff;
-  border-radius: 10px;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-  padding: 15px;
-  margin-bottom: 15px;
-}
-
-.review-header {
-  font-weight: 500;
-}
-
-.review-content {
-  font-size: 15px;
-  line-height: 1.4;
-  color: #333;
-}
-
-.review-footer {
-  color: #777;
-}
-
-/* 카테고리 버튼 기본 스타일 */
-.category-btn {
-  background-color: white;
-  color: #333;
-  border: 1px solid #ccc;
-  font-weight: 600;
-  padding: 6px 12px;
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-/* 마우스 올렸을 때 */
-.category-btn:hover {
-  background-color: #ff69b4; /* 분홍색 */
-  color: white;
-  border-color: #ff69b4;
-}
-
-/* ---- filter-btn 토스 스타일 ---- */
-button.filter-btn {
-  display: inline-block;
-  padding: 8px 16px 8px 35px; /* 더 작게 */
-  border-radius: 8px; /* 토스 스타일: 각진 모서리 */
-  background: #ffffff; /* 토스 스타일: 흰색 배경 */
-  color: #333333; /* 토스 스타일: 진한 회색 글씨 */
-  border: 1px solid #e1e5e9; /* 토스 스타일: 연한 회색 테두리 */
-  font-weight: 500; /* 토스 스타일: 중간 굵기 */
-  font-size: 0.9rem; /* 토스 스타일: 작은 글씨 */
-  letter-spacing: 0.01em;
-  text-align: center; /* 글자 가운데 정렬 */
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08); /* 토스 스타일: 부드러운 그림자 */
-  transition: 
-    background 0.15s, 
-    color 0.15s, 
-    border-color 0.15s, 
-    box-shadow 0.15s;
-  cursor: pointer;
-  outline: none;
+.rating-summary-box h4 {
+  font-size: 2.1rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 14px;
+  letter-spacing: 1px;
+  z-index: 1;
   position: relative;
 }
-
-/* 버튼 크기 줄이려면: padding 값을 줄이세요 */
-/* 예시: padding: 8px 16px 8px 35px; (더 작게) */
-/* 예시: padding: 6px 12px 6px 30px; (더 작게) */
-
-/* V 체크 아이콘 추가 */
-button.filter-btn[data-active="true"]::before {
-  content: '✔';
-  position: absolute;
-  left: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  font-size: 1.1em;
+.rating-stars {
+  font-size: 2.6rem;
+  color: #ffe066;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 0 6px #ffe06688);
+}
+.rating-summary-box .summary-detail {
+  color: #b0b0b0;
+  font-size: 1.08rem;
+  margin-top: 12px;
+  z-index: 1;
+  position: relative;
+}
+.rating-summary-box .btn {
+  background: linear-gradient(90deg, #ff69b4 0%, #5f7fff 100%);
   color: #fff;
-  opacity: 1;
-  transition: opacity 0.18s;
-  pointer-events: none;
+  border: none;
+  border-radius: 10px;
+  font-weight: 700;
+  box-shadow: 0 2px 12px rgba(95, 127, 255, 0.18);
+  font-size: 1.1rem;
+  padding: 10px 28px;
+  margin-top: 18px;
+  z-index: 1;
+  position: relative;
+  transition: background 0.2s, box-shadow 0.2s;
+}
+.rating-summary-box .btn:hover {
+  background: linear-gradient(90deg, #5f7fff 0%, #ff69b4 100%);
+  box-shadow: 0 4px 24px rgba(255, 105, 180, 0.22);
 }
 
-button.filter-btn::before {
-  content: '';
-  opacity: 0;
+.review-list {
+  margin-top: 32px;
+}
+.review-card {
+  background: rgba(36, 38, 50, 0.92);
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(31, 38, 135, 0.18);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.07);
+  padding: 28px 24px 20px 24px;
+  margin-bottom: 28px;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.2s, border 0.2s;
+}
+.review-card:hover {
+  box-shadow: 0 8px 32px rgba(95, 127, 255, 0.18);
+  border: 1.5px solid #5f7fff;
+}
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.review-nickname {
+  color: #5f7fff;
+  font-weight: 700;
+  font-size: 1.15rem;
+  letter-spacing: 0.5px;
+}
+.review-meta {
+  color: #8faaff;
+  font-size: 0.98rem;
+}
+.review-content {
+  color: #f0f0f0;
+  font-size: 1.13rem;
+  line-height: 1.7;
+  margin-top: 10px;
+}
+.review-footer {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.review-like-btn {
+  background: none;
+  border: none;
+  color: #b0b0b0;
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.1s;
+  filter: drop-shadow(0 0 4px #ff69b4aa);
+}
+.review-like-btn:hover {
+  color: #ff69b4;
+  transform: scale(1.18);
 }
 
-button.filter-btn[data-active="true"] {
-  background: linear-gradient(90deg, #ff69b4 0%, #ffb6d5 100%); /* 핑크 그라데이션 */
-  color: #fff;
-  border-color: #ff69b4;
-  box-shadow: 0 2px 8px rgba(255, 105, 180, 0.15);
+.modal-review, .modal-review *:not(.btn):not(.btn-primary):not(.btn-secondary) {
+  color: #222 !important;
 }
 
-button.filter-btn:hover,
-button.filter-btn:focus {
-  background: #f8f9fa; /* 토스 스타일: 연한 회색 */
-  color: #333;
-  border-color: #ff69b4; /* 핑크 유지 */
+.modal-review .modal-footer {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 18px;
+  padding-top: 10px;
+  border-top: none !important;
 }
-
-button.filter-btn[data-active="true"]:hover,
-button.filter-btn[data-active="true"]:focus {
-  background: linear-gradient(90deg, #ff69b4 0%, #ffb6d5 100%); /* 핑크 그라데이션 */
-  color: #fff;
-  border-color: #ff69b4;
-  box-shadow: 0 4px 12px rgba(255, 105, 180, 0.2);
-}
-
-button.filter-btn:active {
-  transform: scale(0.97);
-}
-
-/* ---- "아직 등록된 후기가 없습니다" 메시지 토스 스타일 ---- */
-.text-muted {
-  color: #333333; /* 진한 회색으로 변경해서 잘 보이게 */
-  font-size: 0.9rem;
-  text-align: center;
-  padding: 20px;
-  background: #f8f9fa;
+.modal-review .btn-primary, .modal-review .btn-secondary {
+  min-width: 120px;
+  height: 44px;
+  font-size: 1rem;
+  font-weight: 600;
   border-radius: 8px;
-  margin: 20px 0;
-  font-weight: 400;
+  border: none;
+  box-shadow: 0 2px 8px rgba(60, 80, 180, 0.08);
+  flex: 1 1 0;
+  margin-bottom: 0;
+  transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+}
+.modal-review .btn-primary {
+  background: #3a5aff;
+  color: #fff;
+}
+.modal-review .btn-primary:hover {
+  background: #274bb5;
+  box-shadow: 0 4px 16px rgba(60, 80, 180, 0.13);
+}
+.modal-review .btn-secondary {
+  background: #f4f6fa;
+  color: #222;
+  border: 1px solid #e1e5e9;
+}
+.modal-review .btn-secondary:hover {
+  background: #e9ecf3;
+  color: #222;
+}
+/* 모달 구분선 제거 */
+.modal-review .modal-footer hr,
+.modal-review hr {
+  display: none !important;
+  border: none !important;
+} 
+
+/* 카테고리 필터 버튼 - 젊고 깔끔한 스타일 */
+.filter-btn {
+  display: inline-block;
+  padding: 8px 22px;
+  margin: 0 10px 12px 0;
+  border: none;
+  border-radius: 20px;
+  background: #f3f1fa;
+  color: #444;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  outline: none;
+  box-shadow: 0 2px 8px rgba(255, 53, 122, 0.06);
+  letter-spacing: 0.01em;
 }
 
-/* ---- 후기 수 스타일 ---- */
-.card-box .text-muted.small {
-  color: #666666;
-  font-size: 0.85rem;
-  margin-top: 8px;
-  font-weight: 400;
+.filter-btn[data-active="true"],
+.filter-btn.active {
+  background: #ff357a;
+  color: #fff;
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(255, 53, 122, 0.13);
 }
 
+.filter-btn:hover:not([data-active="true"]):not(.active) {
+  background: #e6e0f3;
+  color: #ff357a;
+}
 
+.filter-btn:last-child {
+  margin-right: 0;
+} 
 
-
-
+/* '아직 등록된 후기가 없습니다' 안내문 - 2030 감성, 깔끔하고 세련되게 */
+.no-review-message {
+  background: rgba(30, 32, 40, 0.82); /* 다크 투명 배경 */
+  color: #fff;
+  border-radius: 16px;
+  padding: 28px 0;
+  text-align: center;
+  font-size: 1.13rem;
+  font-weight: 500;
+  margin: 36px 0 32px 0;
+  letter-spacing: 0.01em;
+  box-shadow: 0 2px 12px rgba(31, 38, 135, 0.10);
+  line-height: 1.7;
+  transition: background 0.2s, color 0.2s;
+} 
 

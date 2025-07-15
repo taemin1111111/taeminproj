@@ -35,7 +35,7 @@
                         <div class="col-md-3 mb-3">
                             <div class="fw-bold mb-2">
                                 <a href="#" class="text-dark text-decoration-none"
-                                   onclick="loadRegionData('<%=sigungu%>', true)">
+                                   onclick="loadRegionData('<%=sigungu%>', true, event)">
                                     <%= sigungu %>
                                 </a>
                             </div>
@@ -43,7 +43,7 @@
                                 <% for (String dong : sigunguMap.get(sigungu)) { %>
                                     <li>
                                         <a href="#" class="text-dark text-decoration-none"
-                                           onclick="loadRegionData('<%=dong%>', false)">
+                                           onclick="loadRegionData('<%=dong%>', false, event)">
                                             <%= dong %>
                                         </a>
                                     </li>
@@ -71,7 +71,8 @@
   let currentRegion = "";
   let currentIsSigungu = false;
 
-  function loadRegionData(region, isSigungu) {
+  function loadRegionData(region, isSigungu, event) {
+    if (event) event.preventDefault();
     currentRegion = region;
     currentIsSigungu = isSigungu;
 
@@ -80,6 +81,8 @@
       .then(function(res) { return res.text(); })
       .then(function(html) {
         document.getElementById("result-box").innerHTML = html;
+        // 스크롤 이동 추가
+        document.getElementById("result-box").scrollIntoView({ behavior: "smooth" });
       })
       .catch(function(err) {
         console.error("데이터 불러오기 실패:", err);
@@ -116,5 +119,32 @@
     setTimeout(function() {
       toast.style.display = "none";
     }, 2000);
+  }
+
+  function recommendReview(reviewNum) {
+    fetch(root + "/review/recommendAction.jsp?reviewNum=" + reviewNum, {
+      method: "GET",
+      credentials: "same-origin"
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        document.getElementById("good-count-" + reviewNum).innerText = data.good;
+        showToast("추천 완료!", "success");
+      } else {
+        showToast(data.message, "error");
+      }
+    })
+    .catch(err => {
+      showToast("서버 오류", "error");
+    });
+  }
+
+  function openReviewModal(region, isSigungu) {
+    document.getElementById("hgIdInput").value = region;
+    document.getElementById("regionInput").value = region;
+    document.getElementById("isSigunguInput").value = isSigungu;
+    var modal = new bootstrap.Modal(document.getElementById('reviewModal'));
+    modal.show();
   }
 </script>
