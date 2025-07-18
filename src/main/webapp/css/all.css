@@ -119,3 +119,156 @@ hr.divider {
   margin: 16px 0;
 }
 
+/* ✅ 커스텀 마커 스타일 */
+.custom-marker {
+    position: relative;
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    text-align: center;
+    line-height: 32px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.custom-marker:hover {
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+/* 카테고리별 마커 색상 */
+.marker-club {
+    background: linear-gradient(135deg, #9c27b0, #ba68c8);
+}
+
+.marker-hunting {
+    background: linear-gradient(135deg, #f44336, #ef5350);
+}
+
+.marker-lounge {
+    background: linear-gradient(135deg, #4caf50, #66bb6a);
+}
+
+.marker-pocha {
+    background: linear-gradient(135deg, #8d6e63, #a1887f);
+}
+
+/* 마커 아래 상호명 */
+.marker-label {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-top: 4px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 500;
+    white-space: nowrap;
+    opacity: 1;
+    transition: opacity 0.2s ease;
+    pointer-events: none;
+    z-index: 1000;
+}
+
+.custom-marker:hover .marker-label {
+    opacity: 1;
+}
+
+/* 마커 컨테이너 */
+.marker-container {
+    position: relative;
+    display: inline-block;
+}
+
+/* === 동/구 오버레이(큰 원/라벨) === */
+.region-label {
+  background: rgba(60, 60, 200, 0.15);
+  color: #333;
+  font-weight: bold;
+  font-size: 16px;
+  border-radius: 20px;
+  padding: 8px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  border: 1.5px solid #bdbdbd;
+  text-align: center;
+  pointer-events: auto;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.region-label:hover {
+  background: rgba(60, 60, 200, 0.25);
+}
+
+/* === 카테고리별 개수 오버레이(마커+숫자) === */
+.region-counts {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+  justify-content: center;
+  align-items: center;
+}
+.region-count-marker {
+  display: flex;
+  align-items: center;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 16px;
+  padding: 4px 10px 4px 8px;
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  margin-right: 2px;
+}
+.region-count-marker.marker-club { background: linear-gradient(135deg, #9c27b0, #ba68c8); }
+.region-count-marker.marker-hunting { background: linear-gradient(135deg, #f44336, #ef5350); }
+.region-count-marker.marker-lounge { background: linear-gradient(135deg, #4caf50, #66bb6a); }
+.region-count-marker.marker-pocha { background: linear-gradient(135deg, #8d6e63, #a1887f); }
+.region-count-marker .count {
+  font-size: 12px;
+  margin-left: 4px;
+  color: #fff;
+  opacity: 0.85;
+}
+
+.region-label {
+  pointer-events: auto !important;
+}
+.region-counts, .dong-category-counts {
+  pointer-events: none !important;
+}
+.dong-category-counts {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 24px;
+  background: rgba(255,255,255,0.85);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  border: 1.5px solid #e0e0e0;
+  backdrop-filter: blur(4px);
+}
+.category-ball {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  color: #fff;
+  font-weight: bold;
+  font-size: 18px;
+  margin-right: 4px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+.marker-club   { background: linear-gradient(135deg, #9c27b0, #ba68c8); }
+.marker-hunting{ background: linear-gradient(135deg, #f44336, #ef5350); }
+.marker-lounge { background: linear-gradient(135deg, #4caf50, #66bb6a); }
+.marker-pocha  { background: linear-gradient(135deg, #8d6e63, #a1887f); }
+
