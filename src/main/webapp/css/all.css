@@ -272,3 +272,163 @@ hr.divider {
 .marker-lounge { background: linear-gradient(135deg, #4caf50, #66bb6a); }
 .marker-pocha  { background: linear-gradient(135deg, #8d6e63, #a1887f); }
 
+/* 투표 별점 스타일 */
+.rating-stars {
+  font-size: 18px;
+  color: #ffc107;
+  cursor: pointer;
+}
+.rating-stars .bi-star {
+  transition: color 0.2s;
+}
+.rating-stars .bi-star:hover,
+.rating-stars .bi-star-fill {
+  color: #ffc107;
+}
+
+/* 핫플 정보 카드 */
+.hotplace-info {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+}
+
+/* 카드 박스 공통 */
+.card-box {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 투표 폼 버튼 */
+.btn.vote-btn, .btn-primary.btn-sm.w-100 {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+.btn.vote-btn:hover, .btn-primary.btn-sm.w-100:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  color: #ff1493;
+}
+
+.pick-location-btn:active, .btn-primary.btn-sm.w-100:active {
+  transform: translateY(0);
+}
+
+/* 투표 카테고리 뱃지 */
+.badge.bg-light.text-dark, .category-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+}
+
+.category-club { background: #9c27b0; }
+.category-hunting { background: #f44336; }
+.category-lounge { background: #4caf50; }
+.category-pocha { background: #8d6e63; }
+
+/* 투표 안내 메시지 스타일 */
+.vote-guide-container {
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border: 2px dashed #dee2e6;
+  border-radius: 15px;
+  padding: 25px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.vote-guide-icon {
+  font-size: 3rem;
+  color: #6c757d;
+  opacity: 0.6;
+  margin-bottom: 15px;
+}
+
+.vote-guide-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #495057;
+  margin-bottom: 8px;
+  line-height: 1.4;
+}
+
+.vote-guide-subtitle {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 20px;
+}
+
+/* 지정하기 버튼 스타일 */
+.pick-location-btn {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border: none;
+  color: white;
+  padding: 10px 25px;
+  border-radius: 25px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.pick-location-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  color: #ff1493;
+}
+
+.pick-location-btn:active {
+  transform: translateY(0);
+}
+
+/* 지도 번쩍 효과 (투명한 트렌디한 핑크) */
+.map-glow-effect {
+  box-shadow: 0 0 0 4px rgba(255, 20, 147, 0.3), 
+              0 0 20px 8px rgba(255, 20, 147, 0.2),
+              0 0 40px 16px rgba(255, 20, 147, 0.1) !important;
+  transition: box-shadow 0.6s ease-in-out;
+}
+
+/* 오늘핫 오른쪽 고정 패널 */
+.todayhot-float-panel {
+  position: fixed;
+  top: 170px;
+  right: 32px;
+  width: 320px;
+  background: none;
+  box-shadow: none;
+  z-index: 2000;
+  border: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.today-hot-box.card-box {
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+  padding: 18px 16px;
+  min-width: 220px;
+}
+
+@media (max-width: 900px) {
+  .todayhot-float-panel {
+    display: none;
+  }
+}
+

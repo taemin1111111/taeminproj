@@ -13,6 +13,7 @@
 
 <!-- Kakao Map SDK -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=9c8d14f1fa7135d1f77778321b1e25fa&libraries=services"></script>
+<link rel="stylesheet" href="<%=request.getContextPath()%>/css/all.css">
 
 <div class="main-container">
   <div class="row gx-4 gy-4 align-items-stretch">
@@ -30,10 +31,22 @@
         </div>
       </div>
     </div>
+    
+    <!-- 투표 섹션 -->
+    <div class="col-md-3">
+      <div class="card-box h-100" style="min-height:600px;">
+        <jsp:include page="nowhot.jsp" />
+      </div>
+    </div>
   </div>
 </div>
 
+<jsp:include page="todayHot.jsp" />
+
 <script>
+  // JSP 변수들을 JavaScript로 전달
+  var rootPath = '<%=root%>';
+  
   // 핫플레이스 데이터
   var hotplaces = [<% for (int i = 0; i < hotplaceList.size(); i++) { HotplaceDto dto = hotplaceList.get(i); %>{id:<%=dto.getId()%>, name:'<%=dto.getName()%>', categoryId:<%=dto.getCategoryId()%>, address:'<%=dto.getAddress()%>', lat:<%=dto.getLat()%>, lng:<%=dto.getLng()%>}<% if (i < hotplaceList.size() - 1) { %>,<% } %><% } %>];
   // 시군구 중심좌표
@@ -86,11 +99,12 @@
     var markerImage = new kakao.maps.MarkerImage(canvas.toDataURL(), new kakao.maps.Size(32, 32));
     var marker = new kakao.maps.Marker({ map: null, position: new kakao.maps.LatLng(place.lat, place.lng), image: markerImage });
     var labelOverlay = new kakao.maps.CustomOverlay({ content: '<div class="marker-label">' + place.name + '</div>', position: new kakao.maps.LatLng(place.lat, place.lng), xAnchor: 0.5, yAnchor: 0, map: null });
+    var rootPath = '<%=root%>';
     var infoContent = ''
       + '<div style="padding:8px; font-size:14px; line-height:1.4;">'
       +   '<strong>' + place.name + '</strong><br/>'
       +   place.address + '<br/>'
-      +   '<a href="#" style="color:#1275E0; text-decoration:none;">상세보기</a>'
+      +   '<a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none;">🔥 투표하기</a>'
       + '</div>';
     var infowindow = new kakao.maps.InfoWindow({ content: infoContent });
     kakao.maps.event.addListener(marker, 'click', function() {
@@ -253,5 +267,13 @@
     });
     overlay.setMap(map);
     openRegionCountOverlay = overlay;
+  }
+
+  // 투표 섹션 표시 함수 (nowhot.jsp에서 처리)
+  function showVoteSection(hotplaceId, name, address, categoryId) {
+    // nowhot.jsp의 함수 호출
+    if (typeof showVoteForm === 'function') {
+      showVoteForm(hotplaceId, name, address, categoryId);
+    }
   }
 </script>
