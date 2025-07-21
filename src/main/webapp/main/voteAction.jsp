@@ -22,6 +22,12 @@
         return;
     }
     
+    System.out.println("placeId=" + placeId);
+    System.out.println("congestion=" + congestion);
+    System.out.println("genderRatio=" + genderRatio);
+    System.out.println("waitTime=" + waitTime);
+    System.out.println("voterId=" + voterId);
+    
     try {
         VoteNowHotDto voteDto = new VoteNowHotDto();
         voteDto.setPlaceId(Integer.parseInt(placeId));

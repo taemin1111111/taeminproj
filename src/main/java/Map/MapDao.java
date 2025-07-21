@@ -102,12 +102,12 @@ public class MapDao {
     public List<Map<String, Object>> getSigunguCategoryCounts() {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT p.sigungu, p.lat, p.lng, " +
-                "SUM(CASE WHEN h.categoryId = 1 THEN 1 ELSE 0 END) AS clubCount, " +
-                "SUM(CASE WHEN h.categoryId = 2 THEN 1 ELSE 0 END) AS huntingCount, " +
-                "SUM(CASE WHEN h.categoryId = 3 THEN 1 ELSE 0 END) AS loungeCount, " +
-                "SUM(CASE WHEN h.categoryId = 4 THEN 1 ELSE 0 END) AS pochaCount " +
+                "SUM(CASE WHEN h.category_id = 1 THEN 1 ELSE 0 END) AS clubCount, " +
+                "SUM(CASE WHEN h.category_id = 2 THEN 1 ELSE 0 END) AS huntingCount, " +
+                "SUM(CASE WHEN h.category_id = 3 THEN 1 ELSE 0 END) AS loungeCount, " +
+                "SUM(CASE WHEN h.category_id = 4 THEN 1 ELSE 0 END) AS pochaCount " +
                 "FROM place_info p " +
-                "LEFT JOIN hotplace h ON p.sigungu = h.sigungu " +
+                "LEFT JOIN hotplace_info h ON p.id = h.region_id " +
                 "GROUP BY p.sigungu, p.lat, p.lng";
         Connection conn = null;
         PreparedStatement pstmt = null;

@@ -127,8 +127,7 @@ document.getElementById('pickLocationBtn').onclick = function() {
 
 // 외부에서 호출: 마커 클릭 시 클럽 정보만 변경
 function showVoteForm(hotplaceId, name, address, categoryId) {
-  if (!pickMode) return; // pickMode가 아닐 때는 무시
-  
+  // pickMode 체크 제거
   // 클럽 정보 부분만 변경
   document.getElementById('voteGuide').style.display = 'none';
   document.getElementById('hotplaceInfo').style.display = 'block';

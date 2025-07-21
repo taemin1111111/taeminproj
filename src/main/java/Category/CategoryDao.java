@@ -9,7 +9,7 @@ public class CategoryDao {
 
     public List<CategoryDto> getAllCategories() {
         List<CategoryDto> list = new ArrayList<>();
-        String sql = "SELECT * FROM category ORDER BY id";
+        String sql = "SELECT * FROM place_category ORDER BY id";
 
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql);
