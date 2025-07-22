@@ -138,7 +138,6 @@ function showVoteForm(hotplaceId, name, address, categoryId) {
   document.getElementById('voteHotplaceAddress').textContent = address;
   var categoryNames = { 1: '클럽', 2: '헌팅', 3: '라운지', 4: '포차' };
   document.getElementById('voteCategoryBadge').textContent = categoryNames[categoryId] || '';
-  document.getElementById('voteForm').reset();
 }
 
 // 투표 폼 제출
@@ -156,14 +155,16 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     alert('모든 항목을 선택해주세요!');
     return;
   }
-  const formData = new FormData();
-  formData.append('hotplaceId', hotplaceId);
-  formData.append('crowd', crowd.value);
-  formData.append('wait', wait.value);
-  formData.append('gender', gender.value);
+  // FormData → URLSearchParams로 변경
+  const params = new URLSearchParams();
+  params.append('hotplaceId', hotplaceId);
+  params.append('crowd', crowd.value);
+  params.append('wait', wait.value);
+  params.append('gender', gender.value);
   fetch('<%=root%>/main/voteAction.jsp', {
     method: 'POST',
-    body: formData
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: params
   })
   .then(response => {
     if (response.ok) {
@@ -171,7 +172,7 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
       // 클럽 정보 부분을 다시 초기 상태로
       document.getElementById('hotplaceInfo').style.display = 'none';
       document.getElementById('voteGuide').style.display = 'block';
-      document.getElementById('voteForm').reset();
+      document.getElementById('voteForm').reset(); // 투표 성공 후에만 reset 호출
     } else {
       alert('투표 처리 중 오류가 발생했습니다.');
     }

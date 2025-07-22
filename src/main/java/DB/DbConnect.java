@@ -1,32 +1,29 @@
 package DB;
 
 import java.sql.*;
+import javax.naming.*;
+import javax.sql.DataSource;
 
 public class DbConnect {
-
-    static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
-    static final String MYSQL_URL = "jdbc:mysql://127.0.0.1:3306/hothot?serverTimezone=Asia/Seoul&characterEncoding=utf8";
-    static final String MYSQL_USER = "root";
-    static final String MYSQL_PASSWORD = "a1234";
+    private DataSource ds;
 
     public DbConnect() {
         try {
-            Class.forName(MYSQL_DRIVER);
-        } catch (ClassNotFoundException e) {
-            System.out.println("MySQL 드라이버 로딩 실패: " + e.getMessage());
+            Context ctx = new InitialContext();
+            ds = (DataSource) ctx.lookup("java:comp/env/jdbc/hotdb");
+        } catch (Exception e) {
+            System.out.println("DataSource lookup 실패: " + e.getMessage());
         }
     }
 
     public Connection getConnection() {
-        Connection conn = null;
         try {
-            conn = DriverManager.getConnection(MYSQL_URL, MYSQL_USER, MYSQL_PASSWORD);
-            System.out.println("MySQL 연결 성공!");
+            return ds.getConnection();
         } catch (SQLException e) {
-            System.out.println("MySQL 연결 실패!");
+            System.out.println("커넥션 풀에서 연결 실패!");
             e.printStackTrace();
+            return null;
         }
-        return conn;
     }
 
     public void dbClose(ResultSet rs, Statement stmt, Connection conn) {

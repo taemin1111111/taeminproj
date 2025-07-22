@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+    <Resource name="jdbc/hotdb" auth="Container"
+              type="javax.sql.DataSource"
+              maxTotal="20" maxIdle="10" maxWaitMillis="10000"
+              username="root" password="a1234"
+              driverClassName="com.mysql.cj.jdbc.Driver"
+              url="jdbc:mysql://127.0.0.1:3306/hothot?serverTimezone=Asia/Seoul&amp;characterEncoding=utf8"/>
+</Context>
