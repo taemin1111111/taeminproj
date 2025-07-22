@@ -35,4 +35,39 @@ public class VoteNowHotDao {
             pstmt2.executeUpdate();
         }
     }
+
+    // 중복 투표 여부 확인 (오늘 같은 가게에 이미 투표했는지)
+    public boolean isAlreadyVotedToday(String voterId, int placeId) {
+        String sql = "SELECT COUNT(*) FROM vote_nowhot WHERE voter_id = ? AND place_id = ? AND DATE(voted_at) = CURDATE()";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, voterId);
+            pstmt.setInt(2, placeId);
+            try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1) > 0;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    // 오늘 해당 voterId가 투표한 서로 다른 가게 수
+    public int getTodayVotePlaceCount(String voterId) {
+        String sql = "SELECT COUNT(DISTINCT place_id) FROM vote_nowhot WHERE voter_id = ? AND DATE(voted_at) = CURDATE()";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, voterId);
+            try (java.sql.ResultSet rs = pstmt.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
 }

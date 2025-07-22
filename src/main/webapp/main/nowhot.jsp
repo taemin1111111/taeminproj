@@ -140,6 +140,19 @@ function showVoteForm(hotplaceId, name, address, categoryId) {
   document.getElementById('voteCategoryBadge').textContent = categoryNames[categoryId] || '';
 }
 
+// 토스트 메시지 함수 추가
+function showToast(message, type) {
+  // type: 'success' | 'error'
+  let toast = document.createElement('div');
+  toast.textContent = message;
+  toast.className = 'toast-message ' + (type === 'success' ? 'success' : 'error');
+  document.body.appendChild(toast);
+  setTimeout(() => {
+    toast.style.opacity = '0';
+    setTimeout(() => document.body.removeChild(toast), 500);
+  }, 1800);
+}
+
 // 투표 폼 제출
 document.getElementById('voteForm').addEventListener('submit', function(e) {
   e.preventDefault();
@@ -148,11 +161,11 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
   const wait = document.querySelector('input[name="wait"]:checked');
   const gender = document.querySelector('input[name="gender"]:checked');
   if (!hotplaceId) {
-    alert('위치를 먼저 선택해주세요!');
+    showToast('지도에서 가게 정보를 넣어주세요', 'error');
     return;
   }
   if (!crowd || !wait || !gender) {
-    alert('모든 항목을 선택해주세요!');
+    showToast('질문에 모두 답변해주세요 ㅠ', 'error');
     return;
   }
   // FormData → URLSearchParams로 변경
@@ -167,19 +180,23 @@ document.getElementById('voteForm').addEventListener('submit', function(e) {
     body: params
   })
   .then(response => {
+    if (response.redirected && response.url.includes('error=already_voted')) {
+      showToast('같은 장소에는 하루 한 번만 투표 가능합니다', 'error');
+      return;
+    }
     if (response.ok) {
-      alert('투표가 완료되었습니다!');
+      showToast('소중한 투표 감사합니다!!!', 'success');
       // 클럽 정보 부분을 다시 초기 상태로
       document.getElementById('hotplaceInfo').style.display = 'none';
       document.getElementById('voteGuide').style.display = 'block';
       document.getElementById('voteForm').reset(); // 투표 성공 후에만 reset 호출
     } else {
-      alert('투표 처리 중 오류가 발생했습니다.');
+      showToast('투표 처리 중 오류가 발생했습니다.', 'error');
     }
   })
   .catch(error => {
     console.error('Error:', error);
-    alert('투표 처리 중 오류가 발생했습니다.');
+    showToast('투표 처리 중 오류가 발생했습니다.', 'error');
   });
 });
 </script>

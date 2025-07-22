@@ -1,6 +1,12 @@
-/* ✅ 전체 기본 스타일 */
+@font-face {
+    font-family: 'Pretendard';
+    src: url('https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff') format('woff');
+    font-weight: 400;
+    font-style: normal;
+}
+
 body {
-    font-family: 'Noto Sans KR', sans-serif;
+    font-family: 'Pretendard', sans-serif;
     background-color: #2f2f2f;  /* 메인 밝은 회색 배경 */
     color: #222;
     margin: 0;
@@ -430,5 +436,45 @@ hr.divider {
   .todayhot-float-panel {
     display: none;
   }
+}
+
+/* ✅ 토스트 메시지 (투표 등 알림용) */
+.toast-message {
+  position: fixed;
+  top: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  padding: 14px 28px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  opacity: 0.95;
+  transition: opacity 0.5s;
+  pointer-events: none;
+}
+.toast-message.success {
+  background: #28a745;
+}
+.toast-message.error {
+  background: #dc3545;
+}
+
+/* 위시리스트 하트 아이콘 */
+.wish-heart {
+  font-size: 1.6em;
+  color: #bbb;
+  cursor: pointer;
+  transition: color 0.2s;
+  user-select: none;
+  vertical-align: middle;
+}
+.wish-heart.on {
+  color: #ff357a;
+}
+.wish-heart:hover {
+  color: #ff357a;
 }
 

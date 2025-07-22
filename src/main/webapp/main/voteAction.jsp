@@ -19,7 +19,7 @@
     // 3. 세션 userId 로그
     String voterId = (String) session.getAttribute("userId");
     if (voterId == null) {
-        voterId = "anonymous"; // 임시 사용자 ID
+        voterId = request.getRemoteAddr(); // 비로그인 시 IP
     }
     System.out.println("voterId=" + voterId);
     
@@ -30,15 +30,27 @@
     }
     
     try {
+        int placeIdInt = Integer.parseInt(placeId);
+        VoteNowHotDao voteDao = new VoteNowHotDao();
+        // 1. 중복 투표 방지 (같은 가게에 하루 1번)
+        if (voteDao.isAlreadyVotedToday(voterId, placeIdInt)) {
+            response.sendRedirect("nowhot.jsp?error=already_voted");
+            return;
+        }
+        // 2. 하루 8곳 제한
+        if (voteDao.getTodayVotePlaceCount(voterId) >= 8) {
+            response.sendRedirect("nowhot.jsp?error=limit_exceeded");
+            return;
+        }
+
         VoteNowHotDto voteDto = new VoteNowHotDto();
-        voteDto.setPlaceId(Integer.parseInt(placeId));
+        voteDto.setPlaceId(placeIdInt);
         voteDto.setVoterId(voterId);
         voteDto.setCongestion(Integer.parseInt(congestion));
         voteDto.setGenderRatio(Integer.parseInt(genderRatio));
         voteDto.setWaitTime(Integer.parseInt(waitTime));
         voteDto.setVotedAt(new Date());
         
-        VoteNowHotDao voteDao = new VoteNowHotDao();
         voteDao.insertVote(voteDto);
         
         // 성공 시 메인 페이지로 리다이렉트

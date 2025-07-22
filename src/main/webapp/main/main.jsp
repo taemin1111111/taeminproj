@@ -9,7 +9,11 @@
     List<Map<String, Object>> sigunguCategoryCountList = mapDao.getSigunguCategoryCounts();
     List<Map<String, Object>> regionCenters = mapDao.getAllRegionCenters();
     List<Map<String, Object>> regionCategoryCounts = mapDao.getRegionCategoryCounts();
+    String loginId = (String)session.getAttribute("loginid");
 %>
+<script>
+  var isLoggedIn = <%= (loginId != null) ? "true" : "false" %>;
+</script>
 
 <!-- Kakao Map SDK -->
 <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=9c8d14f1fa7135d1f77778321b1e25fa&libraries=services"></script>
@@ -100,8 +104,11 @@
     var marker = new kakao.maps.Marker({ map: null, position: new kakao.maps.LatLng(place.lat, place.lng), image: markerImage });
     var labelOverlay = new kakao.maps.CustomOverlay({ content: '<div class="marker-label">' + place.name + '</div>', position: new kakao.maps.LatLng(place.lat, place.lng), xAnchor: 0.5, yAnchor: 0, map: null });
     var rootPath = '<%=root%>';
+    // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
+    var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" id="wishHeart-${place.id}" style="position:absolute;top:8px;right:8px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + '<div style="padding:8px; font-size:14px; line-height:1.4;">'
+      + `<div style="position:relative;padding:8px; font-size:14px; line-height:1.4;">`
+      +   heartHtml
       +   '<strong>' + place.name + '</strong><br/>'
       +   place.address + '<br/>'
       +   '<a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none;">🔥 투표하기</a>'
@@ -111,6 +118,12 @@
       if (openInfoWindow) openInfoWindow.close();
       infowindow.open(map, marker);
       openInfoWindow = infowindow;
+      // 하트 상태 동기화 및 이벤트 연결
+      if (isLoggedIn) {
+        setTimeout(function() {
+          setupWishHeart(place.id);
+        }, 100); // infowindow 렌더링 후
+      }
     });
     hotplaceMarkers.push(marker);
     hotplaceLabels.push(labelOverlay);
@@ -275,5 +288,47 @@
     if (typeof showVoteForm === 'function') {
       showVoteForm(hotplaceId, name, address, categoryId);
     }
+  }
+
+  // 하트 상태 동기화 및 클릭 이벤트
+  function setupWishHeart(placeId) {
+    var heart = document.getElementById('wishHeart-' + placeId);
+    console.log('setupWishHeart called for placeId:', placeId, 'heart:', heart);
+    if (!heart) return;
+    // 찜 여부 확인
+    fetch(rootPath + '/main/wishAction.jsp?action=check&place_id=' + placeId)
+      .then(res => res.json())
+      .then(data => {
+        if (data.result === true) {
+          heart.classList.add('on');
+          heart.classList.remove('bi-heart');
+          heart.classList.add('bi-heart-fill');
+        } else {
+          heart.classList.remove('on');
+          heart.classList.remove('bi-heart-fill');
+          heart.classList.add('bi-heart');
+        }
+      });
+    // 찜/찜 해제 이벤트
+    heart.onclick = function() {
+      console.log('하트 클릭됨 for placeId:', placeId);
+      var isWished = heart.classList.contains('on');
+      var action = isWished ? 'remove' : 'add';
+      fetch(rootPath + '/main/wishAction.jsp?action=' + action + '&place_id=' + placeId)
+        .then(res => res.json())
+        .then(data => {
+          if (data.result === true) {
+            if (isWished) {
+              heart.classList.remove('on');
+              heart.classList.remove('bi-heart-fill');
+              heart.classList.add('bi-heart');
+            } else {
+              heart.classList.add('on');
+              heart.classList.remove('bi-heart');
+              heart.classList.add('bi-heart-fill');
+            }
+          }
+        });
+    };
   }
 </script>

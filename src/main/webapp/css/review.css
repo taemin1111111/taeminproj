@@ -3,7 +3,7 @@
 body {
   background: linear-gradient(135deg, #181c24 0%, #23243a 100%);
   color: #e0e0e0;
-  font-family: 'Noto Sans KR', 'Pretendard', sans-serif;
+  font-family: 'Pretendard', sans-serif;
 }
 
 .rating-summary-box {
