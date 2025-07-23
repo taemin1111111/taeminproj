@@ -11,11 +11,14 @@
     List<Map<String, Object>> regionCategoryCounts = mapDao.getRegionCategoryCounts();
     String loginId = (String)session.getAttribute("loginid");
     System.out.println("loginId in session: " + loginId); 
+    List<String> regionNameList = mapDao.getAllRegionNames();
+    List<String> hotplaceNameList = hotplaceDao.getAllHotplaceNames();
 %>
 <script>
   var isLoggedIn = <%= (loginId != null) ? "true" : "false" %>;
   var loginUserId = '<%= (loginId != null ? loginId : "") %>';
-  
+  var regionNameList = [<% for(int i=0;i<regionNameList.size();i++){ %>'<%=regionNameList.get(i).replace("'", "\\'")%>'<% if(i<regionNameList.size()-1){%>,<%}}%>];
+  var hotplaceNameList = [<% for(int i=0;i<hotplaceNameList.size();i++){ %>'<%=hotplaceNameList.get(i).replace("'", "\\'")%>'<% if(i<hotplaceNameList.size()-1){%>,<%}}%>];
 </script>
 
 <!-- Kakao Map SDK -->
@@ -25,14 +28,66 @@
 <div class="main-container">
   <div class="row gx-4 gy-4 align-items-stretch">
     <div class="col-md-9">
-      <div class="card-box h-100" style="min-height:600px; display:flex; flex-direction:column;">
-        <h5 class="fw-bold mb-2">🗺️ 핫플 지도</h5>
-        <p class="text-muted-small mb-3">지금 가장 핫한 장소들을 지도로 한눈에 확인해보세요.</p>
-        <button onclick="moveToCurrentLocation()" class="btn btn-sm btn-outline-primary mb-3 float-end d-flex align-items-center gap-1">
+      <div class="card-box h-100" style="min-height:600px; display:flex; flex-direction:column; position:relative;">
+        <div style="text-align: center;">
+          <img src="<%=root%>/logo/hotmap.png" alt="핫플 지도" style="max-width: 70px; height: auto; object-fit: contain; margin-bottom: 0; margin-top: -16px; display: block; margin-left: auto; margin-right: auto;">
+          <p class="text-muted-small mb-3" style="display: inline-block; margin-top: -8px;">지금 가장 핫한 장소들을 지도로 한눈에 확인해보세요.</p>
+        </div>
+        <button onclick="moveToCurrentLocation()" class="btn btn-sm btn-outline-primary mb-3 d-flex align-items-center gap-1 map-location-btn" style="width:110px; min-width:unset; padding: 4px 10px; font-size: 0.85rem; border-radius: 18px; display: block; margin-left: 0; float: left;">
           <i class="bi bi-crosshair"></i>
-          현재 위치로 보기
+          내 위치
         </button>
-        <div id="map" style="width:100%; height:600px; border-radius:12px;"></div>
+        <div id="map" style="width:100%; height:600px; border-radius:12px; position:relative;">
+          <div id="categoryFilterBar" style="position:absolute; top:16px; left:16px; z-index:10; display:flex; gap:8px;">
+            <button class="category-filter-btn active" data-category="all">전체</button>
+            <button class="category-filter-btn marker-club" data-category="1">C</button>
+            <button class="category-filter-btn marker-hunting" data-category="2">H</button>
+            <button class="category-filter-btn marker-lounge" data-category="3">L</button>
+            <button class="category-filter-btn marker-pocha" data-category="4">P</button>
+          </div>
+          <!-- 오른쪽 패널 토글 버튼 및 패널 (위치 동적 변경) -->
+          <button id="rightPanelToggleBtn" style="position:absolute; top:50%; right:0; transform:translateY(-50%); z-index:20; background:#fff; border-radius:8px 0 0 8px; border:1.5px solid #ddd; border-right:none; width:36px; height:56px; box-shadow:0 2px 8px rgba(0,0,0,0.10); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; transition:background 0.15s;">&lt;</button>
+          <div id="rightPanel" style="position:absolute; top:0; right:0; height:100%; width:360px; max-width:90vw; background:#fff; box-shadow:-2px 0 16px rgba(0,0,0,0.10); z-index:30; border-radius:16px 0 0 16px; transform:translateX(100%); transition:transform 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column;">
+            <button id="rightPanelCloseBtn" style="position:absolute; left:-36px; top:50%; transform:translateY(-50%); width:36px; height:56px; background:#fff; border-radius:8px 0 0 8px; border:1.5px solid #ddd; border-left:none; box-shadow:0 2px 8px rgba(0,0,0,0.10); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; display:none;">&gt;</button>
+            <!-- 검색창 -->
+            <div id="searchBar" style="position:sticky; top:0; background:#fff; z-index:2; padding:24px 20px 12px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+              <!-- 검색 타입 드롭다운 -->
+              <style>
+                .search-type-dropdown { position:relative; }
+                .search-type-btn { display:flex; align-items:center; gap:4px; background:#f5f6fa; border:1.5px solid #e0e0e0; border-radius:16px; font-size:0.93rem; font-weight:500; color:#222; padding:0 10px; height:32px; min-width:54px; max-width:70px; cursor:pointer; transition:border 0.18s, background 0.18s; outline:none; white-space:nowrap; }
+                .search-type-btn:focus, .search-type-btn.active { border:1.5px solid #1275E0; background:#fff; }
+                .search-type-arrow { font-size:1em; color:#888; margin-left:2px; }
+                .search-type-list { position:absolute; top:110%; left:0; min-width:54px; background:#fff; border:1.5px solid #e0e0e0; border-radius:10px; box-shadow:0 4px 16px rgba(0,0,0,0.08); z-index:10; display:none; flex-direction:column; padding:2px 0; }
+                .search-type-list.show { display:flex; }
+                .search-type-item { padding:6px 14px; font-size:0.93rem; color:#222; background:none; border:none; text-align:left; cursor:pointer; transition:background 0.13s; white-space:nowrap; }
+                .search-type-item:hover, .search-type-item.selected { background:#f0f4fa; color:#1275E0; }
+              </style>
+              <form style="display:flex; align-items:center; gap:8px; position:relative; min-width:0;" onsubmit="return false;">
+                  <div class="search-type-dropdown" id="searchTypeDropdown" style="flex:0 0 60px; min-width:54px; max-width:70px;">
+                    <button type="button" class="search-type-btn" id="searchTypeBtn" style="width:100%; min-width:54px; max-width:70px; justify-content:center;">
+                      <span id="searchTypeText">지역</span>
+                      <span class="search-type-arrow">&#9660;</span>
+                    </button>
+                    <div class="search-type-list" id="searchTypeList">
+                      <button type="button" class="search-type-item selected" data-type="지역">지역</button>
+                      <button type="button" class="search-type-item" data-type="가게">가게</button>
+                    </div>
+                  </div>
+                  <div style="position:relative; flex:1; min-width:0;">
+                    <input type="text" id="searchInput" placeholder="지역, 장소 검색 가능" style="width:100%; height:44px; border-radius:24px; border:1.5px solid #e0e0e0; background:#fafbfc; font-size:1.08rem; padding:0 44px 0 18px; box-shadow:0 2px 8px rgba(0,0,0,0.03); outline:none; transition:border 0.18s; min-width:0;" autocomplete="off" />
+                    <button id="searchBtn" type="submit" style="position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; outline:none; cursor:pointer; font-size:1.35rem; color:#1275E0; display:flex; align-items:center; justify-content:center; padding:0; width:28px; height:28px;">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+                    </button>
+                    <div id="autocompleteList" style="position:absolute; left:0; top:46px; width:100%; background:rgba(255,255,255,0.97); border-radius:14px; box-shadow:0 4px 16px rgba(0,0,0,0.10); z-index:30; display:none; flex-direction:column; overflow:hidden; border:1.5px solid #e0e0e0;"></div>
+                  </div>
+                </form>
+            </div>
+            <div style="padding:24px 20px 20px 20px; flex:1; overflow-y:auto; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+              <div style="width:100%; height:220px; background:#f5f5f5; border-radius:12px; display:flex; align-items:center; justify-content:center; color:#888; font-size:1.2rem;">여기에 정보/리스트/검색 UI가 들어갑니다</div>
+            </div>
+          </div>
+          <!-- 카카오맵이 실제로 렌더링됨 -->
+        </div>
         <div class="text-end mt-2">
           <a href="<%=root%>/map/full.jsp" class="text-info">지도 전체 보기 →</a>
         </div>
@@ -52,11 +107,8 @@
 
 <script>
   // JSP 변수들을 JavaScript로 전달
-  var rootPath = '<%=root%>';
-  
-  // 핫플레이스 데이터
   var hotplaces = [<% for (int i = 0; i < hotplaceList.size(); i++) { HotplaceDto dto = hotplaceList.get(i); %>{id:<%=dto.getId()%>, name:'<%=dto.getName()%>', categoryId:<%=dto.getCategoryId()%>, address:'<%=dto.getAddress()%>', lat:<%=dto.getLat()%>, lng:<%=dto.getLng()%>}<% if (i < hotplaceList.size() - 1) { %>,<% } %><% } %>];
-  console.log('hotplaces:', hotplaces);
+  var rootPath = '<%=root%>';
   // 시군구 중심좌표
   var sigunguCenters = [<% for (int i = 0; i < sigunguCenterList.size(); i++) { Map<String, Object> row = sigunguCenterList.get(i); %>{sido:'<%=row.get("sido")%>', sigungu:'<%=row.get("sigungu")%>', lat:<%=row.get("lat")%>, lng:<%=row.get("lng")%>}<% if (i < sigunguCenterList.size() - 1) { %>,<% } %><% } %>];
   // 시군구별 카테고리별 개수
@@ -75,6 +127,7 @@
 
   // 마커/오버레이 배열
   var hotplaceMarkers = [], hotplaceLabels = [], hotplaceInfoWindows = [];
+  var hotplaceCategoryIds = [];
   var guOverlays = [], guCountOverlays = [];
   var dongOverlays = [], dongCountOverlays = [];
   var openInfoWindow = null;
@@ -82,7 +135,6 @@
 
   // 핫플 마커/상호명/인포윈도우 생성 (처음엔 숨김)
   hotplaces.forEach(function(place) {
-    console.log('마커 생성 place:', place); // 값 확인용 로그
     var markerClass = '', markerText = '';
     switch(place.categoryId) {
       case 1: markerClass = 'marker-club'; markerText = 'C'; break;
@@ -108,8 +160,6 @@
     var markerImage = new kakao.maps.MarkerImage(canvas.toDataURL(), new kakao.maps.Size(32, 32));
     var marker = new kakao.maps.Marker({ map: null, position: new kakao.maps.LatLng(place.lat, place.lng), image: markerImage });
     var labelOverlay = new kakao.maps.CustomOverlay({ content: '<div class="marker-label">' + place.name + '</div>', position: new kakao.maps.LatLng(place.lat, place.lng), xAnchor: 0.5, yAnchor: 0, map: null });
-    var rootPath = '<%=root%>';
-    console.log('하트 생성 시점 place.id:', place.id); // 하트 생성 시점 place.id 로그
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
     var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:8px;right:8px;z-index:10;"></i>` : '';
     var infoContent = ''
@@ -140,14 +190,46 @@
           heart.style.right = '8px';
           heart.style.zIndex = '10';
           iw.appendChild(heart);
-          // 하트 상태 동기화 및 이벤트 연결
-          setupWishHeartByClass(place.id);
+          // 로그인 여부에 따라 클릭 이벤트 분기
+          if (!isLoggedIn) {
+            heart.onclick = function() {
+              showToast('위시리스트는 로그인 후 사용할 수 있어요. 간편하게 로그인하고 저장해보세요!', 'error');
+            };
+          } else {
+            // 하트 상태 동기화 및 이벤트 연결
+            setupWishHeartByClass(place.id);
+          }
         }
       }, 100);
     });
+    marker.categoryId = place.categoryId; // 마커에 카테고리 저장
     hotplaceMarkers.push(marker);
     hotplaceLabels.push(labelOverlay);
     hotplaceInfoWindows.push(infowindow);
+    hotplaceCategoryIds.push(place.categoryId);
+  });
+
+  // === 카테고리 필터 버튼 클릭 이벤트 ===
+  document.addEventListener('DOMContentLoaded', function() {
+    var filterBtns = document.querySelectorAll('.category-filter-btn');
+    filterBtns.forEach(function(btn) {
+      btn.onclick = function() {
+        // 버튼 active 스타일
+        filterBtns.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        var cat = btn.getAttribute('data-category');
+        // 마커 show/hide
+        hotplaceMarkers.forEach(function(marker, idx) {
+          if (cat === 'all' || String(marker.categoryId) === cat) {
+            marker.setMap(map);
+            if (hotplaceLabels[idx]) hotplaceLabels[idx].setMap(map);
+          } else {
+            marker.setMap(null);
+            if (hotplaceLabels[idx]) hotplaceLabels[idx].setMap(null);
+          }
+        });
+      };
+    });
   });
 
   // 구 오버레이 생성 (17~15)
@@ -276,6 +358,60 @@
     .region-counts, .dong-category-counts {
       pointer-events: none !important;
     }
+    /* 지도 위치 버튼 스타일 개선 */
+    .map-location-btn {
+      width: 110px !important;
+      min-width: unset !important;
+      padding: 4px 10px !important;
+      font-size: 0.85rem !important;
+      border-radius: 18px !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+      background: #fff;
+      color: #1275E0;
+      border: 1.5px solid #1275E0;
+      transition: background 0.15s, color 0.15s;
+      display: block !important;
+      margin-left: 0 !important;
+      float: left !important;
+    }
+    .map-location-btn:hover {
+      background: #1275E0;
+      color: #fff;
+    }
+    /* 카테고리 필터 버튼 스타일 (마커 스타일과 동일) */
+    .category-filter-btn {
+      border: none;
+      outline: none;
+      border-radius: 50px;
+      padding: 4px 12px;
+      font-size: 0.92rem;
+      font-weight: bold;
+      color: #fff;
+      background: #bbb;
+      cursor: pointer;
+      transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+      opacity: 0.82;
+      min-width: 32px;
+      min-height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .category-filter-btn.active {
+      border: 2.5px solid #222;
+      opacity: 1;
+      color: #222;
+      background: #fff;
+    }
+    .category-filter-btn.marker-club { background: linear-gradient(135deg, #9c27b0, #ba68c8); color: #fff; }
+    .category-filter-btn.marker-hunting { background: linear-gradient(135deg, #f44336, #ef5350); color: #fff; }
+    .category-filter-btn.marker-lounge { background: linear-gradient(135deg, #4caf50, #66bb6a); color: #fff; }
+    .category-filter-btn.marker-pocha { background: linear-gradient(135deg, #8d6e63, #a1887f); color: #fff; }
+    .category-filter-btn:not(.active):hover {
+      filter: brightness(1.08);
+      opacity: 1;
+    }
   `;
   document.head.appendChild(style);
 
@@ -359,4 +495,99 @@
       }, 100);
     }
   }
+
+  // 오른쪽 패널 토글 기능 (버튼 위치 동적 변경)
+  document.addEventListener('DOMContentLoaded', function() {
+    var openBtn = document.getElementById('rightPanelToggleBtn');
+    var closeBtn = document.getElementById('rightPanelCloseBtn');
+    var panel = document.getElementById('rightPanel');
+    // 초기 상태: 패널 닫힘, < 버튼만 지도 오른쪽 끝에 보임
+    panel.style.transform = 'translateX(100%)';
+    openBtn.style.display = 'flex';
+    closeBtn.style.display = 'none';
+    openBtn.innerHTML = '&lt;';
+    openBtn.onclick = function() {
+      panel.style.transform = 'translateX(0)';
+      openBtn.style.display = 'none';
+      closeBtn.style.display = 'flex';
+    };
+    closeBtn.onclick = function() {
+      panel.style.transform = 'translateX(100%)';
+      closeBtn.style.display = 'none';
+      setTimeout(function() { openBtn.style.display = 'flex'; }, 350);
+    };
+    // 검색 타입 드롭다운 동작
+    var searchTypeBtn = document.getElementById('searchTypeBtn');
+    var searchTypeList = document.getElementById('searchTypeList');
+    var searchTypeText = document.getElementById('searchTypeText');
+    var searchTypeItems = searchTypeList.querySelectorAll('.search-type-item');
+    var dropdownOpen = false;
+    searchTypeBtn.onclick = function(e) {
+      e.stopPropagation();
+      dropdownOpen = !dropdownOpen;
+      searchTypeList.classList.toggle('show', dropdownOpen);
+      searchTypeBtn.classList.toggle('active', dropdownOpen);
+    };
+    searchTypeItems.forEach(function(item) {
+      item.onclick = function(e) {
+        e.stopPropagation();
+        searchTypeItems.forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        searchTypeText.textContent = item.getAttribute('data-type');
+        dropdownOpen = false;
+        searchTypeList.classList.remove('show');
+        searchTypeBtn.classList.remove('active');
+      };
+    });
+    document.addEventListener('click', function() {
+      dropdownOpen = false;
+      searchTypeList.classList.remove('show');
+      searchTypeBtn.classList.remove('active');
+    });
+    // 자동완성(오토컴플릿) UI/로직
+    var searchInput = document.getElementById('searchInput');
+    var autocompleteList = document.getElementById('autocompleteList');
+    var searchTypeText = document.getElementById('searchTypeText');
+    function showAutocompleteList() {
+      var keyword = searchInput.value.trim();
+      if (!keyword) { autocompleteList.style.display = 'none'; return; }
+      var type = searchTypeText.textContent;
+      var list = (type === '지역') ? regionNameList : hotplaceNameList;
+      var filtered = list.filter(function(item) {
+        return item && item.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+      }).slice(0, 8); // 최대 8개
+      if (filtered.length === 0) { autocompleteList.style.display = 'none'; return; }
+      autocompleteList.innerHTML = filtered.map(function(item) {
+        return '<div class="autocomplete-item" style="padding:10px 18px; font-size:1.04rem; color:#222 !important; cursor:pointer; transition:background 0.13s; border-bottom:1px solid #f3f3f3; background:transparent;">' + (item && item.length > 0 ? item : '(빈값)') + '</div>';
+      }).join('');
+      autocompleteList.style.display = 'flex';
+      // 항목 클릭 시 입력창에 반영
+      Array.from(autocompleteList.children).forEach(function(child) {
+        child.onclick = function() {
+          searchInput.value = child.textContent;
+          autocompleteList.style.display = 'none';
+        };
+      });
+    }
+    searchInput.addEventListener('input', showAutocompleteList);
+    searchInput.addEventListener('focus', showAutocompleteList);
+    searchInput.addEventListener('blur', function() {
+      setTimeout(function() { autocompleteList.style.display = 'none'; }, 120);
+    });
+    // 스타일: hover 효과
+    var style = document.createElement('style');
+    style.innerHTML = `.autocomplete-item:hover { background: #f0f4fa !important; color: #1275E0 !important; }`;
+    document.head.appendChild(style);
+  });
+
+  /* 추가 스타일 */
+  var panelStyle = document.createElement('style');
+  panelStyle.innerHTML = `
+    #rightPanel::-webkit-scrollbar { width: 8px; background: #f5f5f5; }
+    #rightPanel::-webkit-scrollbar-thumb { background: #ddd; border-radius: 4px; }
+    #searchBar input:focus { border:1.5px solid #1275E0; background:#fff; }
+    #searchBar input::placeholder { color:#bbb; font-weight:400; }
+    #searchBar { box-shadow:0 2px 8px rgba(0,0,0,0.04); border-radius:16px 16px 0 0; }
+  `;
+  document.head.appendChild(panelStyle);
 </script>

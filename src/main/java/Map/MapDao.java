@@ -196,4 +196,26 @@ public class MapDao {
         }
         return list;
     }
+
+    // 모든 지역명(동/구/시 등) 리스트 반환 (자동완성용)
+    public List<String> getAllRegionNames() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT dong FROM place_info ORDER BY dong";
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        try {
+            conn = db.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            db.dbClose(rs, pstmt, conn);
+        }
+        return list;
+    }
 }

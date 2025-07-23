@@ -196,21 +196,27 @@ hr.divider {
 
 /* === 동/구 오버레이(큰 원/라벨) === */
 .region-label {
-  background: rgba(60, 60, 200, 0.15);
-  color: #333;
-  font-weight: bold;
-  font-size: 16px;
-  border-radius: 20px;
+  background: rgba(255,255,255,0.92);
+  color: #222;
+  font-weight: 700;
+  font-size: 1.08rem;
+  border-radius: 14px;
   padding: 8px 18px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  border: 1.5px solid #bdbdbd;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.10);
+  border: 1.5px solid #e0e0e0;
   text-align: center;
   pointer-events: auto;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, color 0.2s;
+  font-family: 'Pretendard', 'Noto Sans KR', sans-serif;
+  letter-spacing: 0.01em;
+  opacity: 0.98;
 }
 .region-label:hover {
-  background: rgba(60, 60, 200, 0.25);
+  background: #e3f0fb;
+  color: #1275E0;
+  border-color: #b6dafe;
+  box-shadow: 0 4px 16px rgba(18,117,224,0.10);
 }
 
 /* === 카테고리별 개수 오버레이(마커+숫자) === */

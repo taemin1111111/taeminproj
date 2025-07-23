@@ -65,6 +65,22 @@ public class HotplaceDao {
         return null;
     }
 
+    // 모든 가게명(핫플레이스명) 리스트 반환 (자동완성용)
+    public List<String> getAllHotplaceNames() {
+        List<String> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT name FROM hotplace_info ORDER BY name";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
+            while (rs.next()) {
+                list.add(rs.getString(1));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
     // ResultSet → DTO 매핑 분리
     private HotplaceDto mapRowToDto(ResultSet rs) throws SQLException {
         HotplaceDto dto = new HotplaceDto();
