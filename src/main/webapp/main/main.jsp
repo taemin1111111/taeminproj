@@ -10,9 +10,12 @@
     List<Map<String, Object>> regionCenters = mapDao.getAllRegionCenters();
     List<Map<String, Object>> regionCategoryCounts = mapDao.getRegionCategoryCounts();
     String loginId = (String)session.getAttribute("loginid");
+    System.out.println("loginId in session: " + loginId); 
 %>
 <script>
   var isLoggedIn = <%= (loginId != null) ? "true" : "false" %>;
+  var loginUserId = '<%= (loginId != null ? loginId : "") %>';
+  
 </script>
 
 <!-- Kakao Map SDK -->
@@ -53,6 +56,7 @@
   
   // 핫플레이스 데이터
   var hotplaces = [<% for (int i = 0; i < hotplaceList.size(); i++) { HotplaceDto dto = hotplaceList.get(i); %>{id:<%=dto.getId()%>, name:'<%=dto.getName()%>', categoryId:<%=dto.getCategoryId()%>, address:'<%=dto.getAddress()%>', lat:<%=dto.getLat()%>, lng:<%=dto.getLng()%>}<% if (i < hotplaceList.size() - 1) { %>,<% } %><% } %>];
+  console.log('hotplaces:', hotplaces);
   // 시군구 중심좌표
   var sigunguCenters = [<% for (int i = 0; i < sigunguCenterList.size(); i++) { Map<String, Object> row = sigunguCenterList.get(i); %>{sido:'<%=row.get("sido")%>', sigungu:'<%=row.get("sigungu")%>', lat:<%=row.get("lat")%>, lng:<%=row.get("lng")%>}<% if (i < sigunguCenterList.size() - 1) { %>,<% } %><% } %>];
   // 시군구별 카테고리별 개수
@@ -78,6 +82,7 @@
 
   // 핫플 마커/상호명/인포윈도우 생성 (처음엔 숨김)
   hotplaces.forEach(function(place) {
+    console.log('마커 생성 place:', place); // 값 확인용 로그
     var markerClass = '', markerText = '';
     switch(place.categoryId) {
       case 1: markerClass = 'marker-club'; markerText = 'C'; break;
@@ -104,11 +109,11 @@
     var marker = new kakao.maps.Marker({ map: null, position: new kakao.maps.LatLng(place.lat, place.lng), image: markerImage });
     var labelOverlay = new kakao.maps.CustomOverlay({ content: '<div class="marker-label">' + place.name + '</div>', position: new kakao.maps.LatLng(place.lat, place.lng), xAnchor: 0.5, yAnchor: 0, map: null });
     var rootPath = '<%=root%>';
+    console.log('하트 생성 시점 place.id:', place.id); // 하트 생성 시점 place.id 로그
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
-    var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" id="wishHeart-${place.id}" style="position:absolute;top:8px;right:8px;z-index:10;"></i>` : '';
+    var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:8px;right:8px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div style="position:relative;padding:8px; font-size:14px; line-height:1.4;">`
-      +   heartHtml
+      + `<div class="infoWindow" style="position:relative;padding:8px; font-size:14px; line-height:1.4;">`
       +   '<strong>' + place.name + '</strong><br/>'
       +   place.address + '<br/>'
       +   '<a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none;">🔥 투표하기</a>'
@@ -118,12 +123,27 @@
       if (openInfoWindow) openInfoWindow.close();
       infowindow.open(map, marker);
       openInfoWindow = infowindow;
-      // 하트 상태 동기화 및 이벤트 연결
-      if (isLoggedIn) {
-        setTimeout(function() {
-          setupWishHeart(place.id);
-        }, 100); // infowindow 렌더링 후
-      }
+      // InfoWindow가 열린 후, 하트 태그를 직접 append
+      setTimeout(function() {
+        var iwEls = document.getElementsByClassName('infoWindow');
+        if (iwEls.length > 0) {
+          var iw = iwEls[0];
+          // 기존 하트가 있으면 제거
+          var oldHeart = iw.querySelector('.wish-heart');
+          if (oldHeart) oldHeart.remove();
+          // 하트 태그 동적으로 생성
+          var heart = document.createElement('i');
+          heart.className = 'bi bi-heart wish-heart';
+          heart.setAttribute('data-place-id', place.id);
+          heart.style.position = 'absolute';
+          heart.style.top = '8px';
+          heart.style.right = '8px';
+          heart.style.zIndex = '10';
+          iw.appendChild(heart);
+          // 하트 상태 동기화 및 이벤트 연결
+          setupWishHeartByClass(place.id);
+        }
+      }, 100);
     });
     hotplaceMarkers.push(marker);
     hotplaceLabels.push(labelOverlay);
@@ -290,45 +310,53 @@
     }
   }
 
-  // 하트 상태 동기화 및 클릭 이벤트
-  function setupWishHeart(placeId) {
-    var heart = document.getElementById('wishHeart-' + placeId);
-    console.log('setupWishHeart called for placeId:', placeId, 'heart:', heart);
-    if (!heart) return;
-    // 찜 여부 확인
-    fetch(rootPath + '/main/wishAction.jsp?action=check&place_id=' + placeId)
-      .then(res => res.json())
-      .then(data => {
-        if (data.result === true) {
-          heart.classList.add('on');
-          heart.classList.remove('bi-heart');
-          heart.classList.add('bi-heart-fill');
-        } else {
-          heart.classList.remove('on');
-          heart.classList.remove('bi-heart-fill');
-          heart.classList.add('bi-heart');
-        }
-      });
-    // 찜/찜 해제 이벤트
-    heart.onclick = function() {
-      console.log('하트 클릭됨 for placeId:', placeId);
-      var isWished = heart.classList.contains('on');
-      var action = isWished ? 'remove' : 'add';
-      fetch(rootPath + '/main/wishAction.jsp?action=' + action + '&place_id=' + placeId)
-        .then(res => res.json())
-        .then(data => {
-          if (data.result === true) {
-            if (isWished) {
-              heart.classList.remove('on');
-              heart.classList.remove('bi-heart-fill');
-              heart.classList.add('bi-heart');
-            } else {
+  // 하트 상태 동기화 및 클릭 이벤트 (class 기반)
+  function setupWishHeartByClass(placeId, retryCount = 0) {
+    var hearts = document.getElementsByClassName('wish-heart');
+    var found = false;
+    Array.from(hearts).forEach(function(heart) {
+      if (heart.getAttribute('data-place-id') == placeId) {
+        found = true;
+        // 찜 여부 확인
+        fetch(rootPath + '/main/wishAction.jsp?action=check&place_id=' + placeId)
+          .then(res => res.json())
+          .then(data => {
+            if (data.result === true) {
               heart.classList.add('on');
               heart.classList.remove('bi-heart');
               heart.classList.add('bi-heart-fill');
+            } else {
+              heart.classList.remove('on');
+              heart.classList.remove('bi-heart-fill');
+              heart.classList.add('bi-heart');
             }
-          }
-        });
-    };
+          });
+        // 찜/찜 해제 이벤트
+        heart.onclick = function() {
+          var isWished = heart.classList.contains('on');
+          var action = isWished ? 'remove' : 'add';
+          fetch(rootPath + '/main/wishAction.jsp?action=' + action + '&place_id=' + placeId)
+            .then(res => res.json())
+            .then(data => {
+              if (data.result === true) {
+                if (isWished) {
+                  heart.classList.remove('on');
+                  heart.classList.remove('bi-heart-fill');
+                  heart.classList.add('bi-heart');
+                } else {
+                  heart.classList.add('on');
+                  heart.classList.remove('bi-heart');
+                  heart.classList.add('bi-heart-fill');
+                }
+              }
+            });
+        };
+      }
+    });
+    if (!found && retryCount < 5) {
+      setTimeout(function() {
+        setupWishHeartByClass(placeId, retryCount + 1);
+      }, 100);
+    }
   }
 </script>
