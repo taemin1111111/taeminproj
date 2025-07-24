@@ -57,7 +57,7 @@
           <div id="rightPanel" style="position:absolute; top:0; right:0; height:100%; width:360px; max-width:90vw; background:#fff; box-shadow:-2px 0 16px rgba(0,0,0,0.10); z-index:30; border-radius:16px 0 0 16px; transform:translateX(100%); transition:transform 0.35s cubic-bezier(.77,0,.18,1); display:flex; flex-direction:column;">
             <button id="rightPanelCloseBtn" style="position:absolute; left:-36px; top:50%; transform:translateY(-50%); width:36px; height:56px; background:#fff; border-radius:8px 0 0 8px; border:1.5px solid #ddd; border-left:none; box-shadow:0 2px 8px rgba(0,0,0,0.10); display:flex; align-items:center; justify-content:center; font-size:1.5rem; cursor:pointer; display:none;">&gt;</button>
             <!-- 검색창 -->
-            <div id="searchBar" style="position:sticky; top:0; background:#fff; z-index:2; padding:24px 20px 12px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
+            <div id="searchBar" style="position:sticky; top:0; background:#fff; z-index:10; padding:24px 20px 12px 20px; box-shadow:0 2px 8px rgba(0,0,0,0.04);">
               <!-- 검색 타입 드롭다운 -->
               <style>
                 .search-type-dropdown { position:relative; }
@@ -236,6 +236,15 @@
             if (hotplaceLabels[idx]) hotplaceLabels[idx].setMap(null);
           }
         });
+        // 카테고리 버튼 클릭 시 해당 카테고리의 첫 번째 장소로 지도 이동
+        if (cat !== 'all') {
+          var first = hotplaces.find(function(h) { return String(h.categoryId) === cat; });
+          if (first) {
+            var latlng = new kakao.maps.LatLng(first.lat, first.lng);
+            map.setLevel(5);
+            map.setCenter(latlng);
+          }
+        }
       };
     });
   });
@@ -618,10 +627,55 @@
           };
         });
       } else {
-        // 가게명 리스트 그대로 출력
-        searchResultBox.innerHTML = filtered.map(function(name) {
-          return '<div style="width:92%; margin:0 auto 10px auto; background:#fff; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.04); padding:16px 18px; color:#222; font-size:1.08rem; display:flex; align-items:center;">' + name + '</div>';
+        // 가게명 리스트를 카드 형태로 출력 (동 리스트와 동일)
+        var categoryMap = {1:'클럽',2:'헌팅',3:'라운지',4:'포차'};
+        var matchedHotplaces = window.hotplaces.filter(function(h) {
+          return filtered.includes(h.name);
+        });
+        searchResultBox.innerHTML = matchedHotplaces.map(function(h) {
+          var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
+          var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
+          return '<div class="hotplace-list-card">'
+            + '<div style="flex:1; min-width:0;">'
+            +   '<div style="display:flex; align-items:center; gap:6px;">'
+            +     '<span class="hotplace-name" style="color:#1275E0; font-weight:600; cursor:pointer;">' + h.name + '</span>'
+            +     '<span class="hotplace-category" style="color:#888; margin-left:4px;">' + (categoryMap[h.categoryId]||'') + '</span>'
+            +   '</div>'
+            +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
+            + '</div>'
+            + '<div class="hotplace-card-heart">' + heartHtml + '</div>'
+            + '<div class="hotplace-card-actions">' + voteButtonHtml + '</div>'
+            + '</div>';
         }).join('');
+        setTimeout(function() {
+          Array.from(document.getElementsByClassName('hotplace-list-card')).forEach(function(card) {
+            var heart = card.querySelector('.wish-heart');
+            var placeName = card.querySelector('.hotplace-name').textContent;
+            var place = matchedHotplaces.find(function(h) { return h.name === placeName; });
+            if (!heart || !place) return;
+            if (!isLoggedIn) {
+              heart.onclick = function() {
+                showToast('위시리스트는 로그인 후 사용할 수 있어요. 간편하게 로그인하고 저장해보세요!', 'error');
+              };
+            } else {
+              heart.setAttribute('data-place-id', place.id);
+              setupWishHeartByClass(place.id);
+            }
+            // 가게명/카테고리 클릭 시 지도 이동
+            function moveToHotplace(e) {
+              e.stopPropagation();
+              var latlng = new kakao.maps.LatLng(place.lat, place.lng);
+              map.setLevel(5);
+              map.setCenter(latlng);
+            }
+            var placeNameEl = card.querySelector('.hotplace-name');
+            var placeCategoryEl = card.querySelector('.hotplace-category');
+            placeNameEl.style.cursor = 'pointer';
+            placeCategoryEl.style.cursor = 'pointer';
+            placeNameEl.onclick = moveToHotplace;
+            placeCategoryEl.onclick = moveToHotplace;
+          });
+        }, 100);
       }
     }
 
@@ -641,9 +695,35 @@
         if (categoryId && String(h.categoryId) !== String(categoryId)) return false;
         return true;
       });
+      // 카테고리별 개수는 항상 표시 (0이어도)
+      var count = (window.regionCategoryCounts || []).find(function(c) { return String(c.region_id) === String(regionId); }) || {};
+      var clubCount = (typeof count.clubCount === 'number') ? count.clubCount : 0;
+      var huntingCount = (typeof count.huntingCount === 'number') ? count.huntingCount : 0;
+      var loungeCount = (typeof count.loungeCount === 'number') ? count.loungeCount : 0;
+      var pochaCount = (typeof count.pochaCount === 'number') ? count.pochaCount : 0;
+      var catHtml = '<div class="dong-category-counts-bar">'
+        + '<span class="category-ball marker-club' + (categoryId==1?' active':'') + '" data-category="1">C</span> <span class="cat-count-num" style="color:#9c27b0;">' + clubCount + '</span>'
+        + '<span class="category-ball marker-hunting' + (categoryId==2?' active':'') + '" data-category="2">H</span> <span class="cat-count-num" style="color:#f44336;">' + huntingCount + '</span>'
+        + '<span class="category-ball marker-lounge' + (categoryId==3?' active':'') + '" data-category="3">L</span> <span class="cat-count-num" style="color:#4caf50;">' + loungeCount + '</span>'
+        + '<span class="category-ball marker-pocha' + (categoryId==4?' active':'') + '" data-category="4">P</span> <span class="cat-count-num" style="color:#8d6e63;">' + pochaCount + '</span>'
+        + '</div>';
+      catBar.innerHTML = catHtml;
+      catBar.style.display = 'flex';
+      // 카테고리 원 클릭 이벤트 바인딩
+      Array.from(catBar.getElementsByClassName('category-ball')).forEach(function(ball) {
+        ball.onclick = function() {
+          var cat = ball.getAttribute('data-category');
+          if (window.selectedCategory && String(window.selectedCategory) === String(cat)) {
+            window.renderHotplaceListByDong(dong, null); // 전체
+          } else {
+            window.renderHotplaceListByDong(dong, cat);
+          }
+        };
+      });
+      
+      var dongTitle = '<div style="font-size:1.13rem; font-weight:600; color:#1275E0; margin:14px 0 8px 0;">지역: ' + dong + '</div>';
       if (filtered.length === 0) {
-        catBar.style.display = 'none';
-        window.searchResultBox.innerHTML = '<div style="color:#bbb; text-align:center; padding:40px 0;">해당 지역의 핫플레이스가 없습니다.</div>';
+        window.searchResultBox.innerHTML = dongTitle + '<div style="color:#bbb; text-align:center; padding:40px 0;">해당 지역의 핫플레이스가 없습니다.</div>';
         return;
       }
       // 카테고리별 개수
@@ -674,7 +754,8 @@
       var dongTitle = '<div style="font-size:1.13rem; font-weight:600; color:#1275E0; margin:14px 0 8px 0;">지역: ' + dong + '</div>';
       var categoryMap = {1:'클럽',2:'헌팅',3:'라운지',4:'포차'};
       window.searchResultBox.innerHTML = dongTitle + filtered.map(function(h) {
-        var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; margin-left:auto; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; margin-left:auto; cursor:pointer;"></i>';
+        var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
+        var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
         return '<div class="hotplace-list-card">'
           + '<div style="flex:1; min-width:0;">'
           +   '<div style="display:flex; align-items:center; gap:6px;">'
@@ -683,7 +764,8 @@
           +   '</div>'
           +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
           + '</div>'
-          + heartHtml
+          + '<div class="hotplace-card-heart">' + heartHtml + '</div>'
+          + '<div class="hotplace-card-actions">' + voteButtonHtml + '</div>'
           + '</div>';
       }).join('');
       setTimeout(function() {
@@ -700,6 +782,19 @@
             heart.setAttribute('data-place-id', place.id);
             setupWishHeartByClass(place.id);
           }
+          // 가게명/카테고리 클릭 시 지도 이동
+          function moveToHotplace(e) {
+            e.stopPropagation();
+            var latlng = new kakao.maps.LatLng(place.lat, place.lng);
+            map.setLevel(5);
+            map.setCenter(latlng);
+          }
+          var placeNameEl = card.querySelector('.hotplace-name');
+          var placeCategoryEl = card.querySelector('.hotplace-category');
+          placeNameEl.style.cursor = 'pointer';
+          placeCategoryEl.style.cursor = 'pointer';
+          placeNameEl.onclick = moveToHotplace;
+          placeCategoryEl.onclick = moveToHotplace;
         });
       }, 100);
     }
@@ -774,14 +869,13 @@
     });
     var dongTitle = '<div style="font-size:1.13rem; font-weight:600; color:#1275E0; margin:14px 0 8px 0;">지역: ' + dong + '</div>';
     if (filtered.length === 0) {
-      window.searchResultBox.innerHTML =
-        dongTitle +
-        '<div class="hotplace-list-card" style="justify-content:center; text-align:center; color:#bbb; font-size:1.08rem;">해당 지역의 핫플레이스가 없습니다.</div>';
+      window.searchResultBox.innerHTML = dongTitle + '<div style="color:#bbb; text-align:center; padding:40px 0;">해당 지역의 핫플레이스가 없습니다.</div>';
       return;
     }
     var categoryMap = {1:'클럽',2:'헌팅',3:'라운지',4:'포차'};
     window.searchResultBox.innerHTML = dongTitle + filtered.map(function(h) {
-      var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; margin-left:auto; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; margin-left:auto; cursor:pointer;"></i>';
+      var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
+      var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
       return '<div class="hotplace-list-card">'
         + '<div style="flex:1; min-width:0;">'
         +   '<div style="display:flex; align-items:center; gap:6px;">'
@@ -790,7 +884,10 @@
         +   '</div>'
         +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
         + '</div>'
+        + '<div class="hotplace-card-actions">'
         + heartHtml
+        + voteButtonHtml
+        + '</div>'
         + '</div>';
     }).join('');
     setTimeout(function() {
@@ -842,7 +939,8 @@
 
 <style>
   #rightPanel { display: flex; flex-direction: column; height: 100%; }
-  #searchBar { flex-shrink: 0; }
+  #searchBar { flex-shrink: 0; z-index: 10 !important; }
+  #autocompleteList { z-index: 30 !important; }
   #searchResultBox { flex: 1; min-height:0; height:100%; }
   .hotplace-list-card {
     width: 94%;
@@ -853,8 +951,23 @@
     padding: 14px 14px 10px 14px;
     display: flex;
     align-items: flex-start;
-    gap: 10px;
     position: relative;
+    gap: 10px;
+  }
+  .hotplace-card-heart {
+    position: absolute;
+    right: 14px;
+    top: 12px;
+    z-index: 2;
+  }
+  .hotplace-card-actions {
+    position: absolute;
+    right: 14px;
+    bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 2;
   }
   .hotplace-list-card .hotplace-name {
     font-size: 1.08rem;
@@ -891,7 +1004,7 @@
   #categoryCountsBar {
     position: sticky;
     top: 72px;
-    z-index: 2;
+    z-index: 1 !important;
     background: #fff;
     padding: 12px 20px 4px 20px;
     min-height: 36px;
