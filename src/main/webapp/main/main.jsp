@@ -237,14 +237,14 @@
           }
         });
         // 카테고리 버튼 클릭 시 해당 카테고리의 첫 번째 장소로 지도 이동
-        if (cat !== 'all') {
-          var first = hotplaces.find(function(h) { return String(h.categoryId) === cat; });
-          if (first) {
-            var latlng = new kakao.maps.LatLng(first.lat, first.lng);
-            map.setLevel(5);
-            map.setCenter(latlng);
-          }
-        }
+        // if (cat !== 'all') {
+        //   var first = hotplaces.find(function(h) { return String(h.categoryId) === cat; });
+        //   if (first) {
+        //     var latlng = new kakao.maps.LatLng(first.lat, first.lng);
+        //     map.setLevel(5);
+        //     map.setCenter(latlng);
+        //   }
+        // }
       };
     });
   });
