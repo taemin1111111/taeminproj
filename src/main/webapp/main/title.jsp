@@ -18,7 +18,7 @@
         </div>
 
         <!--  중앙 메뉴 -->
-        <nav class="flex-grow-1 text-center">
+        <nav class="flex-grow-1 text-center header-nav">
             <ul class="nav justify-content-center">
                 <!-- 📌 핫플 평점보기 -->
                 <li class="nav-item dropdown">
@@ -27,14 +27,13 @@
                     </a>
                     <ul class="dropdown-menu text-start">
                        <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=review/gpaform.jsp">지역별 평점 보기</a></li>
-
                     </ul>
                 </li>
 
-                <!-- 핫플 썰 -->
+                <!-- 썰 게시판 -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        핫플 썰
+                        썰 게시판
                     </a>
                     <ul class="dropdown-menu text-start">
                         <li><a class="dropdown-item" href="<%=root%>/community/best.jsp">전체 베스트 썰</a></li>
@@ -42,14 +41,19 @@
                     </ul>
                 </li>
 
-                <!-- 🏨 지역별 숙소 후기 보기 -->
+                <!-- 클럽 MD에게 문의하기 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<%=root%>/stay/reviews.jsp"> 지역별 숙소 후기 보기</a>
+                    <a class="nav-link" href="<%=root%>/md/contact.jsp">클럽 MD에게 문의하기</a>
+                </li>
+
+                <!-- 테이블 예약하기 -->
+                <li class="nav-item">
+                    <a class="nav-link" href="<%=root%>/table/reserve.jsp">테이블 예약하기</a>
                 </li>
 
                 <!-- 📢 공지사항 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<%=root%>/notice/list.jsp"> 공지사항</a>
+                    <a class="nav-link" href="<%=root%>/notice/list.jsp">공지사항</a>
                 </li>
             </ul>
         </nav>

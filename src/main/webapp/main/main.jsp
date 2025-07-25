@@ -591,6 +591,11 @@
       var filtered = list.filter(function(item) {
         return item && item.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
       });
+      // === 카테고리 바 표시/숨김 ===
+      var catBar = document.getElementById('categoryCountsBar');
+      if (type === '가게') {
+        catBar.style.display = 'none';
+      }
       if (!keyword) {
         searchResultBox.innerHTML = '<div style="color:#bbb; text-align:center; padding:40px 0;">검색어를 입력해 주세요.</div>';
         return;

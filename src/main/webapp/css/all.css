@@ -484,3 +484,38 @@ hr.divider {
   color: #ff357a;
 }
 
+/* ===== 상단 네비게이션(header-nav) 커스텀 ===== */
+.header-nav .nav-link {
+  color: #f5f5f5 !important;
+  font-weight: 600;
+  font-size: 1.08rem;
+  border-radius: 18px;
+  padding: 8px 22px;
+  margin: 0 6px;
+  transition: background 0.18s, color 0.18s, box-shadow 0.18s;
+  position: relative;
+}
+.header-nav .nav-link:hover, .header-nav .nav-link:focus, .header-nav .nav-link.active {
+  background: linear-gradient(90deg, #232526 0%, #414345 100%);
+  color: #ff4d94 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  text-decoration: none;
+}
+.header-nav .dropdown-menu {
+  background: #232526;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+  border: none;
+  margin-top: 8px;
+}
+.header-nav .dropdown-item {
+  color: #f5f5f5;
+  font-weight: 500;
+  border-radius: 8px;
+  transition: background 0.13s, color 0.13s;
+}
+.header-nav .dropdown-item:hover, .header-nav .dropdown-item:focus {
+  background: #333;
+  color: #ff4d94;
+}
+
