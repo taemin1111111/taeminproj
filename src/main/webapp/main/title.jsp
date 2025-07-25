@@ -37,7 +37,7 @@
                     </a>
                     <ul class="dropdown-menu text-start">
                         <li><a class="dropdown-item" href="<%=root%>/community/best.jsp">전체 베스트 썰</a></li>
-                        <li><a class="dropdown-item" href="<%=root%>/community/region.jsp">지역별 베스트 썰</a></li>
+                        <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=community/cumain.jsp">지역별 베스트 썰</a></li>
                     </ul>
                 </li>
 
