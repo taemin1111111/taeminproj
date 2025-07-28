@@ -5,6 +5,7 @@
 <%@ page import="CCategory.CCategoryDto" %>
 
 <%
+    String root = request.getContextPath();
     CCategoryDao dao = new CCategoryDao();
     List<CCategoryDto> categories = dao.getAllCategories();
 %>
@@ -32,24 +33,25 @@
                 <div class="category-icon">
                     <% if(cat.getName().contains("헌팅썰")) { %>
                         ❤️
-                    <% } else if(cat.getName().contains("코스추천")) { %>
+                    <% } else if(cat.getName().contains("코스 추천")) { %>
                         🗺️
-                    <% } else if(cat.getName().contains("같이갈래")) { %>
+                    <% } else if(cat.getName().contains("같이 갈래")) { %>
                         👥
-                    <% } else { %>
-                        📝
                     <% } %>
                 </div>
                 <h3 class="category-name"><%= cat.getName() %></h3>
                 <p class="category-description">
                     <% if(cat.getName().contains("헌팅썰")) { %>
                         헌팅 관련 이야기와 경험을 공유해보세요.
-                    <% } else if(cat.getName().contains("코스추천")) { %>
-                        좋은 코스와 장소를 추천해보세요.
-                    <% } else if(cat.getName().contains("같이갈래")) { %>
-                        함께 갈 사람을 찾아보세요.
-                    <% } else { %>
-                        다양한 주제로 이야기를 나누는 공간입니다.
+                    <% } else if(cat.getName().contains("코스 추천")) { %>
+                        이 게시판은 직접 다녀온 핫플 이동 코스를 공유하는 공간입니다.<br>
+                        어떤 지역에서 어디를 먼저 가고, 다음엔 어디로 갔는지,<br>
+                        장소별 분위기나 사람들 반응까지 솔직하게 풀어줘!
+                    <% } else if(cat.getName().contains("같이 갈래")) { %>
+                        혼자 놀긴 아쉽고, 같이 가면 더 핫한 밤!<br>
+                        오늘 같이 놀 사람? 주말에 클럽갈 멤버?<br>
+                        오픈채팅, 파티 모집, 원데이 크루 구인까지<br>
+                        당신의 다음 핫한 밤을 함께할 사람을 여기서 찾아봐.
                     <% } %>
                 </p>
                 <button class="category-btn" onclick="loadCategoryPosts(<%= cat.getId() %>, '<%= cat.getName() %>')">
@@ -92,20 +94,38 @@ function loadCategoryPosts(categoryId, categoryName) {
     if (dividerText) dividerText.textContent = `📝 ${categoryName} 글 목록`;
 
     // AJAX로 해당 카테고리 글 목록 JSP 불러오기
-    let url = '';
-    if (categoryName.includes('헌팅썰')) url = 'hpost_list.jsp';
-    else if (categoryName.includes('코스추천')) url = 'hroot_list.jsp';
-    else if (categoryName.includes('같이갈래')) url = 'hfriend_list.jsp';
-    else url = 'hpost_list.jsp';
-
-    fetch(url)
-        .then(res => res.text())
-        .then(html => {
-            container.innerHTML = html;
-        })
-        .catch(() => {
-            container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
-        });
+    if (categoryName.includes('헌팅썰')) {
+        fetch('<%=root%>/community/hpost_list.jsp')
+            .then(res => res.text())
+            .then(html => {
+                container.innerHTML = html;
+            })
+            .catch(() => {
+                container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
+            });
+    } else if (categoryName.includes('코스 추천')) {
+        container.innerHTML = `
+            <div class="category-posts">
+                <h3 class="posts-category-title">🗺️ 코스추천</h3>
+                <div class="posts-list">
+                    <div class="no-posts">
+                        <p>코스추천 기능은 준비 중입니다.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (categoryName.includes('같이 갈래')) {
+        container.innerHTML = `
+            <div class="category-posts">
+                <h3 class="posts-category-title">👥 같이갈래</h3>
+                <div class="posts-list">
+                    <div class="no-posts">
+                        <p>같이갈래 기능은 준비 중입니다.</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
 }
 
 // 페이지 로드 시 첫 번째 카테고리 자동 선택

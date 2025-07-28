@@ -15,6 +15,9 @@ public class HpostDto {
     private int likes;
     private int dislikes;
     private Timestamp created_at;
+    private String nickname;
+    private String passwd;
+    private int reports;
 
     public HpostDto() {}
 
@@ -53,4 +56,11 @@ public class HpostDto {
 
     public Timestamp getCreated_at() { return created_at; }
     public void setCreated_at(Timestamp created_at) { this.created_at = created_at; }
+
+    public String getNickname() { return nickname; }
+    public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getPasswd() { return passwd; }
+    public void setPasswd(String passwd) { this.passwd = passwd; }
+    public int getReports() { return reports; }
+    public void setReports(int reports) { this.reports = reports; }
 }

@@ -194,7 +194,7 @@
     color: #333;
     margin-bottom: 20px;
     font-weight: 600;
-    border-bottom: 2px solid #f0f0f0;
+    border-bottom: none;
     padding-bottom: 10px;
 }
 
@@ -376,6 +376,119 @@
 .page-btn.active {
     background-color: #ff6b6b;
     border-color: #ff6b6b;
+}
+
+/* 헌팅썰 상단 flex 정렬 */
+.posts-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 0;
+}
+
+/* 작고 정돈된 글쓰기 버튼 */
+.write-btn-small {
+    padding: 6px 18px;
+    font-size: 0.97rem;
+    border-radius: 18px;
+    border: 1.5px solid #bfc6d1;
+    color: #34495e;
+    background: #fff;
+    font-weight: 500;
+    transition: all 0.18s;
+    box-shadow: 0 1px 4px rgba(180, 190, 210, 0.07);
+    outline: none;
+    text-decoration: none;
+    margin-left: 12px;
+}
+.write-btn-small:hover {
+    background: #f4f6fa;
+    border-color: #667eea;
+    color: #222;
+}
+
+/* 헌팅썰 제목/버튼 아래 구분선 */
+.posts-header-divider {
+    height: 1.5px;
+    background: #e3e6ec;
+    border: none;
+    margin: 18px 0 18px 0;
+}
+
+/* 헌팅썰 리스트 테이블 헤더 */
+.posts-table-header {
+    display: flex;
+    align-items: center;
+    background: #f7f8fa;
+    border-radius: 8px 8px 0 0;
+    font-weight: 600;
+    color: #34495e;
+    font-size: 1.01rem;
+    padding: 10px 0 10px 0;
+    border-bottom: 1.5px solid #e3e6ec;
+    margin-bottom: 0;
+}
+.posts-table-row {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #f0f1f4;
+    font-size: 0.99rem;
+    min-height: 44px;
+    background: #fff;
+    transition: background 0.13s;
+}
+.posts-table-row:hover {
+    background: #f6f8fc;
+}
+.col-nickname {
+    flex: 0 0 110px;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.col-title {
+    flex: 1 1 0;
+    padding: 0 10px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.col-likes, .col-dislikes, .col-views {
+    flex: 0 0 70px;
+    text-align: center;
+}
+.col-date {
+    flex: 0 0 120px;
+    text-align: center;
+    color: #888;
+    font-size: 0.97rem;
+}
+.no-posts-row {
+    background: #fff;
+    color: #aaa;
+    text-align: center;
+    font-style: italic;
+    border-bottom: none;
+}
+@media (max-width: 900px) {
+    .col-nickname { flex-basis: 70px; font-size: 0.95rem; }
+    .col-title { font-size: 0.97rem; }
+    .col-likes, .col-dislikes, .col-views { flex-basis: 45px; font-size: 0.95rem; }
+    .col-date { flex-basis: 80px; font-size: 0.93rem; }
+}
+@media (max-width: 600px) {
+    .posts-table-header, .posts-table-row {
+        font-size: 0.93rem;
+    }
+    .col-nickname, .col-likes, .col-dislikes, .col-views, .col-date {
+        flex-basis: 38px;
+        padding: 0 2px;
+    }
+    .col-title {
+        padding: 0 4px;
+    }
 }
 
 /* 반응형 디자인 */
