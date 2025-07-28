@@ -1,1 +1,443 @@
-@charset "UTF-8";
+/* ===== 커뮤니티 페이지 스타일 ===== */
+
+.community-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+/* 환영 메시지 */
+.community-welcome {
+    text-align: center;
+    margin-bottom: 40px;
+    padding: 30px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    color: white;
+}
+
+.welcome-title {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.welcome-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+/* 커뮤니티 헤더 */
+.community-header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.community-title {
+    font-size: 2rem;
+    color: #333;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.community-subtitle {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+/* 카테고리 그리드 - 3개 카테고리에 최적화 */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 25px;
+    margin-bottom: 40px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.category-card {
+    background: white;
+    border-radius: 15px;
+    padding: 30px 25px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+    min-height: 280px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.category-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.category-card.active {
+    border-color: #667eea;
+    background: linear-gradient(135deg, #f8f9ff 0%, #e8f0ff 100%);
+}
+
+.category-icon {
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+}
+
+.category-name {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+.category-description {
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 25px;
+    flex-grow: 1;
+}
+
+.category-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 25px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    margin-top: auto;
+}
+
+.category-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* 구분선 */
+.community-divider {
+    text-align: center;
+    margin: 40px 0;
+    position: relative;
+}
+
+.community-divider hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #667eea, transparent);
+    margin: 0;
+}
+
+.divider-text {
+    background: white;
+    padding: 0 20px;
+    color: #667eea;
+    font-weight: 600;
+    font-size: 1.1rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+/* 글 작성 섹션 */
+.write-section {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.write-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.write-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* 글 목록 섹션 */
+.posts-section {
+    margin-top: 30px;
+}
+
+.category-posts {
+    background: white;
+    border-radius: 15px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+}
+
+.posts-category-title {
+    font-size: 1.4rem;
+    color: #333;
+    margin-bottom: 20px;
+    font-weight: 600;
+    border-bottom: 2px solid #f0f0f0;
+    padding-bottom: 10px;
+}
+
+.posts-list {
+    margin-bottom: 20px;
+}
+
+.post-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #f0f0f0;
+    transition: background-color 0.2s ease;
+}
+
+.post-item:hover {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.post-item:last-child {
+    border-bottom: none;
+}
+
+.post-title a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    display: block;
+    margin-bottom: 8px;
+}
+
+.post-title a:hover {
+    color: #667eea;
+}
+
+.post-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 0.9rem;
+    color: #666;
+    flex-wrap: wrap;
+}
+
+.post-author {
+    font-weight: 500;
+    color: #667eea;
+}
+
+.post-date {
+    color: #999;
+}
+
+.post-views, .post-likes {
+    color: #666;
+}
+
+.no-posts {
+    text-align: center;
+    padding: 30px;
+    color: #999;
+    font-style: italic;
+}
+
+.view-all-link {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.view-all-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.view-all-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+    text-decoration: none;
+}
+
+/* 페이징 */
+.pagination {
+    text-align: center;
+    margin: 30px 0;
+}
+
+.page-btn {
+    display: inline-block;
+    padding: 8px 12px;
+    margin: 0 3px;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #667eea;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    border: 1px solid #e0e0e0;
+}
+
+.page-btn:hover {
+    background-color: #667eea;
+    color: white;
+    text-decoration: none;
+}
+
+.page-btn.active {
+    background-color: #667eea;
+    color: white;
+    border-color: #667eea;
+}
+
+/* 뒤로가기 버튼 */
+.back-section {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.back-btn {
+    background: #f8f9fa;
+    color: #666;
+    padding: 10px 20px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    display: inline-block;
+    border: 1px solid #e0e0e0;
+}
+
+.back-btn:hover {
+    background: #e9ecef;
+    color: #333;
+    text-decoration: none;
+}
+
+/* ===== 헌팅썰 특화 스타일 ===== */
+.community-header .community-title {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+.community-header .community-subtitle {
+    color: #ff6b6b;
+    font-weight: 500;
+}
+
+.write-btn {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ff8e8e 100%);
+}
+
+.write-btn:hover {
+    box-shadow: 0 5px 15px rgba(255, 107, 107, 0.4);
+}
+
+.post-title a:hover {
+    color: #ff6b6b;
+}
+
+.post-author {
+    color: #ff6b6b;
+}
+
+.page-btn:hover {
+    background-color: #ff6b6b;
+}
+
+.page-btn.active {
+    background-color: #ff6b6b;
+    border-color: #ff6b6b;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .community-container {
+        padding: 15px;
+    }
+    
+    .welcome-title {
+        font-size: 2rem;
+    }
+    
+    .category-grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        max-width: 100%;
+    }
+    
+    .category-card {
+        padding: 25px 20px;
+        min-height: 250px;
+    }
+    
+    .category-icon {
+        font-size: 3rem;
+    }
+    
+    .post-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .write-btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+    
+    .community-title {
+        font-size: 1.6rem;
+    }
+    
+    .category-card {
+        padding: 20px 15px;
+        min-height: 220px;
+    }
+    
+    .category-icon {
+        font-size: 2.5rem;
+    }
+    
+    .category-name {
+        font-size: 1.2rem;
+    }
+    
+    .write-btn {
+        padding: 10px 20px;
+        font-size: 0.95rem;
+    }
+}

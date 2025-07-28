@@ -37,6 +37,8 @@
 <link rel="stylesheet" href="<%=root%>/css/LoginModal.css">
 <!-- 후기작성 -->
 <link rel="stylesheet" href="<%=root%>/css/join.css">
+<!-- 커뮤니티 -->
+<link rel="stylesheet" href="<%=root%>/css/community.css">
 </head>
 <body>
 

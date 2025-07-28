@@ -14,7 +14,7 @@
 						type="hidden" name="isSigungu" id="isSigunguInput"> <input
 						type="hidden" name="hg_id" id="hgIdInput"> <input
 						type="hidden" name="userid"
-						value="<%= session.getAttribute("myid") != null ? session.getAttribute("myid") : request.getRemoteAddr() %>">
+						value="<%= session.getAttribute("loginid") != null ? session.getAttribute("loginid") : request.getRemoteAddr() %>">
 
 					<div class="mb-3">
 						<label class="form-label">닉네임</label> <input type="text"

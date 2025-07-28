@@ -8,7 +8,7 @@ String reviewNumStr = request.getParameter("reviewNum");
 int reviewNum = Integer.parseInt(reviewNumStr);
 
 // 로그인 여부 확인 (userid 한 컬럼만 사용)
-String userid = (String)session.getAttribute("myid");
+String userid = (String)session.getAttribute("loginid");
 if (userid == null || userid.trim().isEmpty()) {
     userid = request.getRemoteAddr(); // 비로그인 시 IP를 userid로 사용
 }
