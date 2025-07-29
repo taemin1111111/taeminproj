@@ -5,6 +5,7 @@
 <%@ page import="hpost.HpostDto" %>
 
 <%
+    String root = request.getContextPath();
     HpostDao dao = new HpostDao();
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
     
@@ -12,7 +13,11 @@
     int perPage = 30; // 페이지당 30개 글
     int currentPage = 1;
     if(request.getParameter("page") != null) {
-        currentPage = Integer.parseInt(request.getParameter("page"));
+        try {
+            currentPage = Integer.parseInt(request.getParameter("page"));
+        } catch(NumberFormatException e) {
+            currentPage = 1;
+        }
     }
     int start = (currentPage - 1) * perPage;
     
@@ -24,7 +29,7 @@
 <div class="category-posts">
     <div class="posts-header-flex">
         <h3 class="posts-category-title">❤️ 헌팅썰</h3>
-        <a href="<%=request.getContextPath()%>/index.jsp?main=community/hpost_insert.jsp" class="write-btn-small">글쓰기</a>
+        <button type="button" onclick="loadWriteForm()" class="write-btn-small">글쓰기</button>
     </div>
     <hr class="posts-header-divider" />
     <div class="posts-table-header">
@@ -41,7 +46,7 @@
                 <div class="posts-table-row">
                     <div class="col-nickname"><%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></div>
                     <div class="col-title">
-                        <a href="<%=request.getContextPath()%>/community/hpost_detail.jsp?id=<%= post.getId() %>"><%= post.getTitle() %></a>
+                        <a href="javascript:void(0)" onclick="loadPostDetail(<%= post.getId() %>)"><%= post.getTitle() %></a>
                     </div>
                     <div class="col-likes">👍 <%= post.getLikes() %></div>
                     <div class="col-dislikes">👎 <%= post.getDislikes() %></div>
@@ -68,7 +73,15 @@
                 <a href="javascript:void(0)" onclick="loadPage(<%= currentPage - 1 %>)" class="page-btn">← 이전</a>
             <% } %>
             
-            <% for(int i = 1; i <= totalPages; i++) { %>
+            <% 
+            // 페이징 범위 계산 (최대 10개 페이지만 표시)
+            int startPage = Math.max(1, currentPage - 4);
+            int endPage = Math.min(totalPages, startPage + 9);
+            if(endPage - startPage < 9) {
+                startPage = Math.max(1, endPage - 9);
+            }
+            
+            for(int i = startPage; i <= endPage; i++) { %>
                 <% if(i == currentPage) { %>
                     <span class="page-btn active"><%= i %></span>
                 <% } else { %>
@@ -86,13 +99,37 @@
 <script>
 function loadPage(page) {
     // AJAX로 페이지 로드
-    fetch('<%=request.getContextPath()%>/community/hpost_list.jsp?page=' + page)
+    fetch('<%=root%>/community/hpost_list.jsp?page=' + page)
         .then(response => response.text())
         .then(html => {
             document.getElementById('posts-container').innerHTML = html;
         })
-        .catch(error => {
-            console.error('페이지 로드 실패:', error);
+        .catch(() => {
+            // 에러 처리
+        });
+}
+
+function loadWriteForm() {
+    // AJAX로 글쓰기 폼 로드
+    fetch('<%=root%>/community/hpost_insert.jsp')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('posts-container').innerHTML = html;
+        })
+        .catch(() => {
+            // 에러 처리
+        });
+}
+
+function loadPostDetail(postId) {
+    // AJAX로 글 상세보기 로드
+    fetch('<%=root%>/community/hpost_detail.jsp?id=' + postId)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('posts-container').innerHTML = html;
+        })
+        .catch(() => {
+            // 에러 처리
         });
 }
 </script> 

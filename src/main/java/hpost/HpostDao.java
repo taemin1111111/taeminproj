@@ -59,8 +59,8 @@ public class HpostDao {
     // 글 작성
     public boolean insertPost(HpostDto dto) {
         boolean success = false;
-        String sql = "INSERT INTO hottalk_post (category_id, userid, nickname, passwd, title, content, photo1, photo2, photo3, likes, dislikes, reports, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, NOW())";
+        String sql = "INSERT INTO hottalk_post (category_id, userid, nickname, passwd, title, content, photo1, photo2, photo3, views, likes, dislikes, reports, created_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, NOW())";
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, dto.getCategory_id());
@@ -199,6 +199,7 @@ public class HpostDao {
         dto.setPhoto1(rs.getString("photo1"));
         dto.setPhoto2(rs.getString("photo2"));
         dto.setPhoto3(rs.getString("photo3"));
+        dto.setViews(rs.getInt("views"));
         dto.setLikes(rs.getInt("likes"));
         dto.setDislikes(rs.getInt("dislikes"));
         dto.setReports(rs.getInt("reports"));

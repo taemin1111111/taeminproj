@@ -32,12 +32,12 @@
         
         <% if(post.getPhoto1() != null && !post.getPhoto1().isEmpty()) { %>
             <div class="post-photos">
-                <img src="<%= root %>/uploads/<%= post.getPhoto1() %>" alt="첨부사진1" class="post-photo">
+                <img src="<%= root %>/hpostsave/<%= post.getPhoto1() %>" alt="첨부사진1" class="post-photo" loading="lazy">
                 <% if(post.getPhoto2() != null && !post.getPhoto2().isEmpty()) { %>
-                    <img src="<%= root %>/uploads/<%= post.getPhoto2() %>" alt="첨부사진2" class="post-photo">
+                    <img src="<%= root %>/hpostsave/<%= post.getPhoto2() %>" alt="첨부사진2" class="post-photo" loading="lazy">
                 <% } %>
                 <% if(post.getPhoto3() != null && !post.getPhoto3().isEmpty()) { %>
-                    <img src="<%= root %>/uploads/<%= post.getPhoto3() %>" alt="첨부사진3" class="post-photo">
+                    <img src="<%= root %>/hpostsave/<%= post.getPhoto3() %>" alt="첨부사진3" class="post-photo" loading="lazy">
                 <% } %>
             </div>
         <% } %>
@@ -70,6 +70,9 @@ function likePost(postId) {
             if(data.success) {
                 document.getElementById('likes-count').textContent = data.likes;
             }
+        })
+        .catch(() => {
+            // 에러 처리
         });
 }
 
@@ -80,6 +83,9 @@ function dislikePost(postId) {
             if(data.success) {
                 document.getElementById('dislikes-count').textContent = data.dislikes;
             }
+        })
+        .catch(() => {
+            // 에러 처리
         });
 }
 
@@ -91,123 +97,10 @@ function reportPost(postId) {
                 if(data.success) {
                     alert('신고가 접수되었습니다.');
                 }
+            })
+            .catch(() => {
+                // 에러 처리
             });
     }
 }
-</script>
-
-<style>
-.post-detail-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 20px;
-    background: white;
-    border-radius: 15px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.post-header {
-    border-bottom: 2px solid #f0f0f0;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-}
-
-.post-title {
-    font-size: 1.8rem;
-    color: #333;
-    margin-bottom: 10px;
-}
-
-.post-meta {
-    display: flex;
-    gap: 20px;
-    color: #666;
-    font-size: 0.9rem;
-}
-
-.post-content {
-    margin-bottom: 30px;
-}
-
-.content-text {
-    line-height: 1.6;
-    font-size: 1.1rem;
-    color: #333;
-    margin-bottom: 20px;
-}
-
-.post-photos {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.post-photo {
-    max-width: 100%;
-    height: auto;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.post-actions {
-    border-top: 1px solid #f0f0f0;
-    padding-top: 20px;
-    margin-bottom: 20px;
-}
-
-.reaction-buttons {
-    display: flex;
-    gap: 10px;
-}
-
-.like-btn, .dislike-btn, .report-btn {
-    padding: 8px 16px;
-    border: none;
-    border-radius: 20px;
-    cursor: pointer;
-    font-size: 0.9rem;
-    transition: all 0.3s ease;
-}
-
-.like-btn {
-    background: #4CAF50;
-    color: white;
-}
-
-.dislike-btn {
-    background: #f44336;
-    color: white;
-}
-
-.report-btn {
-    background: #ff9800;
-    color: white;
-}
-
-.like-btn:hover, .dislike-btn:hover, .report-btn:hover {
-    opacity: 0.8;
-    transform: translateY(-2px);
-}
-
-.post-navigation {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.back-btn {
-    background: #667eea;
-    color: white;
-    padding: 10px 20px;
-    border-radius: 25px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: all 0.3s ease;
-}
-
-.back-btn:hover {
-    background: #5a6fd8;
-    transform: translateY(-2px);
-    text-decoration: none;
-    color: white;
-}
-</style> 
+</script> 

@@ -128,6 +128,46 @@ function loadCategoryPosts(categoryId, categoryName) {
     }
 }
 
+// 글 상세보기 로드 함수
+function loadPostDetail(postId) {
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '<div class="loading-message"><p>글을 불러오는 중...</p></div>';
+    
+    fetch('<%=root%>/community/hpost_detail.jsp?id=' + postId)
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
+        });
+}
+
+// 사진 미리보기 함수 정의 (전역 함수로 한 번만 정의)
+window.updatePhotoPreview = function(input, photoId) {
+    const textElement = document.getElementById(photoId + '-text');
+    const previewElement = document.getElementById(photoId + '-preview');
+    const file = input.files[0];
+    
+    if (file) {
+        // 사진 미리보기로 버튼 변경
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewElement.src = e.target.result;
+            previewElement.style.display = 'block';
+            textElement.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+    } else {
+        // 파일이 없으면 기본 텍스트로 복원
+        textElement.textContent = '+';
+        textElement.style.display = 'block';
+        previewElement.style.display = 'none';
+        textElement.style.color = '#666';
+        textElement.style.fontWeight = 'normal';
+    }
+};
+
 // 페이지 로드 시 첫 번째 카테고리 자동 선택
 window.addEventListener('DOMContentLoaded', function() {
     const firstCard = document.querySelector('.category-card');
