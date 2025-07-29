@@ -50,21 +50,17 @@
         
         // DAO로 데이터베이스에 저장
         HpostDao dao = new HpostDao();
-        boolean success = dao.insertPost(dto);
-        
-        if(success) {
-            // 성공 시 index.jsp의 main 영역을 cumain.jsp로 업데이트
+        int newId = dao.insertPost(dto);
+        if(newId > 0) {
+            // 최신순에서 몇 번째 글인지 구함
+            int rowNum = dao.getRowNumberById(newId, dto.getCategory_id());
+            int perPage = 30;
+            int targetPage = (rowNum - 1) / perPage + 1;
             %>
             <script>
                 alert('글이 성공적으로 작성되었습니다!');
-                // index.jsp의 main 영역을 cumain.jsp로 업데이트
-                if (window.parent && window.parent !== window) {
-                    // iframe에서 실행된 경우
-                    window.parent.location.href = '<%=root%>/index.jsp';
-                } else {
-                    // 일반 페이지인 경우 index.jsp로 이동
-                    window.location.href = '<%=root%>/index.jsp';
-                }
+                // 해당 글이 있는 페이지로 이동 (헌팅썰 목록)
+                window.location.href = '<%=root%>/index.jsp?main=community/cumain.jsp&page=<%=targetPage%>#post<%=newId%>';
             </script>
             <%
         } else {

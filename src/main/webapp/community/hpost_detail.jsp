@@ -20,8 +20,13 @@
     <div class="post-header">
         <h1 class="post-title"><%= post.getTitle() %></h1>
         <div class="post-meta">
-            <span class="post-author">작성자: <%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></span>
-            <span class="post-date">작성일: <%= post.getCreated_at() != null ? sdf.format(post.getCreated_at()) : "" %></span>
+            <div class="post-info">
+                <span class="post-author">작성자: <%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></span>
+                <span class="post-date">작성일: <%= post.getCreated_at() != null ? sdf.format(post.getCreated_at()) : "" %></span>
+            </div>
+            <button class="report-btn-small" onclick="window.reportPost(<%= post.getId() %>)">
+                🚨 신고
+            </button>
         </div>
     </div>
     
@@ -51,14 +56,22 @@
             <button class="dislike-btn" onclick="dislikePost(<%= post.getId() %>)">
                 👎 싫어요 (<span id="dislikes-count"><%= post.getDislikes() %></span>)
             </button>
-            <button class="report-btn" onclick="reportPost(<%= post.getId() %>)">
-                🚨 신고
-            </button>
         </div>
+    </div>
+
+    <!-- 댓글 입력 폼 -->
+    <div class="comment-section">
+        <form id="commentForm" class="comment-form" onsubmit="return false;">
+            <input type="text" id="commentNickname" class="comment-nickname" placeholder="닉네임" maxlength="20" autocomplete="off">
+            <input type="password" id="commentPasswd" class="comment-passwd" placeholder="비밀번호" maxlength="20" autocomplete="off">
+            <textarea id="commentContent" class="comment-input" placeholder="댓글을 입력하세요" rows="2"></textarea>
+            <button type="button" class="comment-submit" onclick="submitComment(<%= post.getId() %>)">댓글 등록</button>
+        </form>
+        <div class="comment-space" id="commentSpace"></div>
     </div>
     
     <div class="post-navigation">
-        <a href="<%= root %>/community/cumain.jsp" class="back-btn">← 목록으로 돌아가기</a>
+        <a href="javascript:void(0)" onclick="loadCategoryPosts(1, '헌팅썰')" class="back-btn">← 목록으로 돌아가기</a>
     </div>
 </div>
 
@@ -89,18 +102,7 @@ function dislikePost(postId) {
         });
 }
 
-function reportPost(postId) {
-    if(confirm('이 글을 신고하시겠습니까?')) {
-        fetch('<%= root %>/community/hpost_action.jsp?action=report&id=' + postId)
-            .then(response => response.json())
-            .then(data => {
-                if(data.success) {
-                    alert('신고가 접수되었습니다.');
-                }
-            })
-            .catch(() => {
-                // 에러 처리
-            });
-    }
-}
+window.addEventListener('DOMContentLoaded', function() {
+    // 댓글 관련 함수는 cumain.jsp에서 처리
+});
 </script> 

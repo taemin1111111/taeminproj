@@ -27,11 +27,14 @@
 %>
 
 <div class="category-posts">
-    <div class="posts-header-flex">
-        <h3 class="posts-category-title">❤️ 헌팅썰</h3>
+    <h3 class="posts-category-title">❤️ 헌팅썰</h3>
+    <div class="posts-controls">
+        <div class="sort-buttons">
+            <button type="button" class="sort-btn active" onclick="changeSort('latest')">최신순</button>
+            <button type="button" class="sort-btn" onclick="changeSort('popular')">인기글</button>
+        </div>
         <button type="button" onclick="loadWriteForm()" class="write-btn-small">글쓰기</button>
     </div>
-    <hr class="posts-header-divider" />
     <div class="posts-table-header">
         <div class="col-nickname">닉네임</div>
         <div class="col-title">제목</div>
@@ -43,7 +46,7 @@
     <div class="posts-list">
         <% if(totalCount > 0 && posts != null && !posts.isEmpty()) {
             for(HpostDto post : posts) { %>
-                <div class="posts-table-row">
+                <div class="posts-table-row" id="post<%= post.getId() %>">
                     <div class="col-nickname"><%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></div>
                     <div class="col-title">
                         <a href="javascript:void(0)" onclick="loadPostDetail(<%= post.getId() %>)"><%= post.getTitle() %></a>
@@ -109,6 +112,20 @@ function loadPage(page) {
         });
 }
 
+function changeSort(sortType) {
+    // 버튼 active 상태 변경
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+        btn.classList.remove('active');
+    });
+    event.target.classList.add('active');
+    
+    // TODO: 실제 정렬 기능 구현
+    // 현재는 최신순만 구현되어 있음
+    if (sortType === 'popular') {
+        alert('인기글 정렬 기능은 준비 중입니다.');
+    }
+}
+
 function loadWriteForm() {
     // AJAX로 글쓰기 폼 로드
     fetch('<%=root%>/community/hpost_insert.jsp')
@@ -132,4 +149,16 @@ function loadPostDetail(postId) {
             // 에러 처리
         });
 }
+
+// 페이지 로드 시 해시(#postID)가 있으면 해당 글로 스크롤
+window.addEventListener('DOMContentLoaded', function() {
+    if (location.hash && location.hash.startsWith('#post')) {
+        var el = document.querySelector(location.hash);
+        if (el) {
+            el.scrollIntoView({behavior: 'smooth', block: 'center'});
+            el.style.background = '#f3f6ff';
+            setTimeout(function() { el.style.background = ''; }, 1500);
+        }
+    }
+});
 </script> 

@@ -57,12 +57,12 @@ public class HpostDao {
     }
 
     // 글 작성
-    public boolean insertPost(HpostDto dto) {
-        boolean success = false;
+    public int insertPost(HpostDto dto) {
+        int generatedId = -1;
         String sql = "INSERT INTO hottalk_post (category_id, userid, nickname, passwd, title, content, photo1, photo2, photo3, views, likes, dislikes, reports, created_at) " +
                      "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, NOW())";
         try (Connection conn = db.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+             PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, dto.getCategory_id());
             pstmt.setString(2, dto.getUserid());
             pstmt.setString(3, dto.getNickname());
@@ -73,9 +73,15 @@ public class HpostDao {
             pstmt.setString(8, dto.getPhoto2());
             pstmt.setString(9, dto.getPhoto3());
             int n = pstmt.executeUpdate();
-            if (n > 0) success = true;
+            if (n > 0) {
+                try (ResultSet rs = pstmt.getGeneratedKeys()) {
+                    if (rs.next()) {
+                        generatedId = rs.getInt(1);
+                    }
+                }
+            }
         } catch (SQLException e) { e.printStackTrace(); }
-        return success;
+        return generatedId;
     }
 
     // 글 수정
@@ -184,6 +190,22 @@ public class HpostDao {
             if (rs.next()) count = rs.getInt(1);
         } catch (SQLException e) { e.printStackTrace(); }
         return count;
+    }
+
+    // 해당 id가 최신순(내림차순)으로 몇 번째 글인지 반환
+    public int getRowNumberById(int id, int category_id) {
+        int rowNum = 1;
+        String sql = "SELECT COUNT(*) FROM hottalk_post WHERE category_id = ? AND id > ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, category_id);
+            pstmt.setInt(2, id);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                rowNum = rs.getInt(1) + 1;
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return rowNum;
     }
 
     // ResultSet -> Dto 매핑
