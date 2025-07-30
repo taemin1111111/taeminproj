@@ -111,7 +111,7 @@
   </div>
   
   <!-- 헌팅썰 인기글 섹션 - 지도 아래 별도 공간 -->
-  <div class="row mt-3">
+  <div class="row mt-5">
     <div class="col-12">
       <jsp:include page="hunting_popular.jsp" />
     </div>
