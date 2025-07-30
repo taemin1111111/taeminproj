@@ -9,6 +9,7 @@ public class Hottalk_CommentDto {
     private String passwd;
     private String content;
     private String ip_address;
+    private String id_address;
     private int likes;
     private int dislikes;
     private Timestamp created_at;
@@ -33,6 +34,11 @@ public class Hottalk_CommentDto {
 
     public String getIp_address() { return ip_address; }
     public void setIp_address(String ip_address) { this.ip_address = ip_address; }
+
+    public String getId_address() { return id_address; }
+    public void setId_address(String id_address) { this.id_address = id_address; }
+
+
 
     public int getLikes() { return likes; }
     public void setLikes(int likes) { this.likes = likes; }

@@ -59,19 +59,20 @@ public class HpostDao {
     // 글 작성
     public int insertPost(HpostDto dto) {
         int generatedId = -1;
-        String sql = "INSERT INTO hottalk_post (category_id, userid, nickname, passwd, title, content, photo1, photo2, photo3, views, likes, dislikes, reports, created_at) " +
-                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, NOW())";
+        String sql = "INSERT INTO hottalk_post (category_id, userid, userip, nickname, passwd, title, content, photo1, photo2, photo3, views, likes, dislikes, reports, created_at) " +
+                     "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 0, 0, 0, NOW())";
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, java.sql.Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setInt(1, dto.getCategory_id());
             pstmt.setString(2, dto.getUserid());
-            pstmt.setString(3, dto.getNickname());
-            pstmt.setString(4, dto.getPasswd());
-            pstmt.setString(5, dto.getTitle());
-            pstmt.setString(6, dto.getContent());
-            pstmt.setString(7, dto.getPhoto1());
-            pstmt.setString(8, dto.getPhoto2());
-            pstmt.setString(9, dto.getPhoto3());
+            pstmt.setString(3, dto.getUserip());
+            pstmt.setString(4, dto.getNickname());
+            pstmt.setString(5, dto.getPasswd());
+            pstmt.setString(6, dto.getTitle());
+            pstmt.setString(7, dto.getContent());
+            pstmt.setString(8, dto.getPhoto1());
+            pstmt.setString(9, dto.getPhoto2());
+            pstmt.setString(10, dto.getPhoto3());
             int n = pstmt.executeUpdate();
             if (n > 0) {
                 try (ResultSet rs = pstmt.getGeneratedKeys()) {
@@ -154,6 +155,34 @@ public class HpostDao {
         return success;
     }
 
+    // 좋아요 감소
+    public boolean decreaseLikes(int id) {
+        boolean success = false;
+        String sql = "UPDATE hottalk_post SET likes = GREATEST(likes - 1, 0) WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return success;
+    }
+
+    // 싫어요 감소
+    public boolean decreaseDislikes(int id) {
+        boolean success = false;
+        String sql = "UPDATE hottalk_post SET dislikes = GREATEST(dislikes - 1, 0) WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return success;
+    }
+
+
+
     // 신고수 증가
     public boolean increaseReports(int id) {
         boolean success = false;
@@ -192,6 +221,31 @@ public class HpostDao {
         return count;
     }
 
+    // 카테고리별 인기글 목록 조회 (페이징) - 조회수 20%, 좋아요 50%, 댓글 30%
+    public List<HpostDto> getPopularPostsByCategory(int category_id, int start, int perPage) {
+        List<HpostDto> list = new ArrayList<>();
+        String sql = "SELECT p.*, " +
+                    "COALESCE(c.comment_count, 0) as comment_count, " +
+                    "(p.views * 0.2 + p.likes * 0.5 + COALESCE(c.comment_count, 0) * 0.3) as popularity_score " +
+                    "FROM hottalk_post p " +
+                    "LEFT JOIN (SELECT post_id, COUNT(*) as comment_count FROM hottalk_comment GROUP BY post_id) c ON p.id = c.post_id " +
+                    "WHERE p.category_id = ? " +
+                    "ORDER BY popularity_score DESC, p.created_at DESC " +
+                    "LIMIT ?, ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, category_id);
+            pstmt.setInt(2, start);
+            pstmt.setInt(3, perPage);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                HpostDto dto = mapDto(rs);
+                list.add(dto);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
     // 해당 id가 최신순(내림차순)으로 몇 번째 글인지 반환
     public int getRowNumberById(int id, int category_id) {
         int rowNum = 1;
@@ -214,6 +268,7 @@ public class HpostDao {
         dto.setId(rs.getInt("id"));
         dto.setCategory_id(rs.getInt("category_id"));
         dto.setUserid(rs.getString("userid"));
+        dto.setUserip(rs.getString("userip"));
         dto.setNickname(rs.getString("nickname"));
         dto.setPasswd(rs.getString("passwd"));
         dto.setTitle(rs.getString("title"));

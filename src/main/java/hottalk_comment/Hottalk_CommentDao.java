@@ -10,7 +10,7 @@ public class Hottalk_CommentDao {
 
     // 댓글 추가
     public boolean insertComment(Hottalk_CommentDto dto) {
-        String sql = "INSERT INTO hottalk_comment (post_id, nickname, passwd, content, ip_address, likes, dislikes, created_at) VALUES (?, ?, ?, ?, ?, 0, 0, NOW())";
+        String sql = "INSERT INTO hottalk_comment (post_id, nickname, passwd, content, ip_address, id_address, likes, dislikes, created_at) VALUES (?, ?, ?, ?, ?, ?, 0, 0, NOW())";
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, dto.getPost_id());
@@ -18,6 +18,7 @@ public class Hottalk_CommentDao {
             pstmt.setString(3, dto.getPasswd());
             pstmt.setString(4, dto.getContent());
             pstmt.setString(5, dto.getIp_address());
+            pstmt.setString(6, dto.getId_address());
             int n = pstmt.executeUpdate();
             return n > 0;
         } catch (SQLException e) {
@@ -26,10 +27,25 @@ public class Hottalk_CommentDao {
         }
     }
 
-    // 특정 글의 댓글 목록 조회
+    // 특정 글의 댓글 목록 조회 (최신순)
     public List<Hottalk_CommentDto> getCommentsByPostId(int postId) {
         List<Hottalk_CommentDto> list = new ArrayList<>();
-        String sql = "SELECT * FROM hottalk_comment WHERE post_id = ? ORDER BY created_at ASC";
+        String sql = "SELECT * FROM hottalk_comment WHERE post_id = ? ORDER BY created_at DESC";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, postId);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapDto(rs));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 특정 글의 댓글 목록 조회 (좋아요 순)
+    public List<Hottalk_CommentDto> getCommentsByPostIdOrderByLikes(int postId) {
+        List<Hottalk_CommentDto> list = new ArrayList<>();
+        String sql = "SELECT * FROM hottalk_comment WHERE post_id = ? ORDER BY likes DESC, created_at ASC";
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setInt(1, postId);
@@ -53,6 +69,20 @@ public class Hottalk_CommentDao {
             }
         } catch (SQLException e) { e.printStackTrace(); }
         return 0;
+    }
+
+    // 특정 댓글 조회
+    public Hottalk_CommentDto getCommentById(int commentId) {
+        String sql = "SELECT * FROM hottalk_comment WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, commentId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return mapDto(rs);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return null;
     }
 
     // 댓글 삭제
@@ -91,6 +121,30 @@ public class Hottalk_CommentDao {
         return false;
     }
 
+    // 좋아요 감소
+    public boolean decreaseLikes(int id) {
+        String sql = "UPDATE hottalk_comment SET likes = GREATEST(likes - 1, 0) WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            int n = pstmt.executeUpdate();
+            return n > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
+    // 싫어요 감소
+    public boolean decreaseDislikes(int id) {
+        String sql = "UPDATE hottalk_comment SET dislikes = GREATEST(dislikes - 1, 0) WHERE id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, id);
+            int n = pstmt.executeUpdate();
+            return n > 0;
+        } catch (SQLException e) { e.printStackTrace(); }
+        return false;
+    }
+
     // ResultSet -> Dto 매핑
     private Hottalk_CommentDto mapDto(ResultSet rs) throws SQLException {
         Hottalk_CommentDto dto = new Hottalk_CommentDto();
@@ -100,6 +154,7 @@ public class Hottalk_CommentDao {
         dto.setPasswd(rs.getString("passwd"));
         dto.setContent(rs.getString("content"));
         dto.setIp_address(rs.getString("ip_address"));
+        dto.setId_address(rs.getString("id_address"));
         dto.setLikes(rs.getInt("likes"));
         dto.setDislikes(rs.getInt("dislikes"));
         dto.setCreated_at(rs.getTimestamp("created_at"));

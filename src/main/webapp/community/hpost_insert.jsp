@@ -11,8 +11,9 @@
     // 로그인 여부 확인
     boolean isLoggedIn = (loginid != null);
     
-    // 아이디 설정 (로그인 시: loginid, 비로그인 시: IP)
-    String userid = isLoggedIn ? loginid : request.getRemoteAddr();
+    // 아이디 설정 (로그인 시: userid에 loginid, 비로그인 시: userip에 IP)
+    String userid = isLoggedIn ? loginid : null;
+    String userip = isLoggedIn ? null : request.getRemoteAddr();
 %>
 
 <div class="write-container">
@@ -25,6 +26,7 @@
         <form action="<%=root%>/community/hpost_insertaction.jsp" method="post" enctype="multipart/form-data" class="write-form" id="writeForm">
             <input type="hidden" name="category_id" value="1">
             <input type="hidden" name="userid" value="<%= userid %>">
+            <input type="hidden" name="userip" value="<%= userip %>">
             
             <div class="form-group">
                 <label for="nickname" class="form-label">닉네임 *</label>

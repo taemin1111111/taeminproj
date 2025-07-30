@@ -26,6 +26,7 @@
         // 폼 데이터 받기
         int category_id = Integer.parseInt(multi.getParameter("category_id"));
         String userid = multi.getParameter("userid");
+        String userip = multi.getParameter("userip");
         String nickname = multi.getParameter("nickname");
         String passwd = multi.getParameter("passwd");
         String title = multi.getParameter("title");
@@ -40,6 +41,7 @@
         HpostDto dto = new HpostDto();
         dto.setCategory_id(category_id);
         dto.setUserid(userid);
+        dto.setUserip(userip);
         dto.setNickname(nickname);
         dto.setPasswd(passwd);
         dto.setTitle(title);

@@ -16,13 +16,25 @@
     }
 %>
 
-<div class="post-detail-container">
+<div class="post-detail-container" data-post-id="<%= post.getId() %>">
     <div class="post-header">
+        <div class="post-header-top">
+            <button class="delete-btn-small" onclick="window.deletePost(<%= post.getId() %>)">
+                삭제
+            </button>
+        </div>
         <h1 class="post-title"><%= post.getTitle() %></h1>
         <div class="post-meta">
             <div class="post-info">
-                <span class="post-author">작성자: <%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></span>
+                <span class="post-author">작성자: 
+                    <% if(post.getUserid() != null && !post.getUserid().isEmpty() && !post.getUserid().equals("null")) { %>
+                        ⭐ <%= post.getNickname() != null ? post.getNickname() : post.getUserid() %>
+                    <% } else { %>
+                        <%= post.getNickname() != null ? post.getNickname() : "" %>
+                    <% } %>
+                </span>
                 <span class="post-date">작성일: <%= post.getCreated_at() != null ? sdf.format(post.getCreated_at()) : "" %></span>
+                <span class="post-views">👁️ 조회수: <%= post.getViews() %></span>
             </div>
             <button class="report-btn-small" onclick="window.reportPost(<%= post.getId() %>)">
                 🚨 신고
@@ -37,12 +49,12 @@
         
         <% if(post.getPhoto1() != null && !post.getPhoto1().isEmpty()) { %>
             <div class="post-photos">
-                <img src="<%= root %>/hpostsave/<%= post.getPhoto1() %>" alt="첨부사진1" class="post-photo" loading="lazy">
+                <img src="<%= root %>/hpostsave/<%= post.getPhoto1() %>" alt="첨부사진1" class="post-photo" loading="lazy" onclick="openImageModal('<%= root %>/hpostsave/<%= post.getPhoto1() %>', 1)">
                 <% if(post.getPhoto2() != null && !post.getPhoto2().isEmpty()) { %>
-                    <img src="<%= root %>/hpostsave/<%= post.getPhoto2() %>" alt="첨부사진2" class="post-photo" loading="lazy">
+                    <img src="<%= root %>/hpostsave/<%= post.getPhoto2() %>" alt="첨부사진2" class="post-photo" loading="lazy" onclick="openImageModal('<%= root %>/hpostsave/<%= post.getPhoto2() %>', 2)">
                 <% } %>
                 <% if(post.getPhoto3() != null && !post.getPhoto3().isEmpty()) { %>
-                    <img src="<%= root %>/hpostsave/<%= post.getPhoto3() %>" alt="첨부사진3" class="post-photo" loading="lazy">
+                    <img src="<%= root %>/hpostsave/<%= post.getPhoto3() %>" alt="첨부사진3" class="post-photo" loading="lazy" onclick="openImageModal('<%= root %>/hpostsave/<%= post.getPhoto3() %>', 3)">
                 <% } %>
             </div>
         <% } %>
@@ -62,8 +74,23 @@
     <!-- 댓글 입력 폼 -->
     <div class="comment-section">
         <form id="commentForm" class="comment-form" onsubmit="return false;">
-            <input type="text" id="commentNickname" class="comment-nickname" placeholder="닉네임" maxlength="20" autocomplete="off">
-            <input type="password" id="commentPasswd" class="comment-passwd" placeholder="비밀번호" maxlength="20" autocomplete="off">
+            <%
+            String loginid = (String)session.getAttribute("loginid");
+            String nickname = (String)session.getAttribute("nickname");
+            if(loginid != null && !loginid.trim().isEmpty()) {
+                // 로그인된 경우: 닉네임 고정, 비밀번호만 입력
+            %>
+                <input type="text" id="commentNickname" class="comment-nickname" value="<%= nickname != null ? nickname : loginid %>" readonly style="background-color: #f5f5f5;">
+                <input type="password" id="commentPasswd" class="comment-passwd" placeholder="비밀번호" maxlength="20" autocomplete="off">
+            <%
+            } else {
+                // 로그인되지 않은 경우: 닉네임과 비밀번호 모두 입력
+            %>
+                <input type="text" id="commentNickname" class="comment-nickname" placeholder="닉네임" maxlength="20" autocomplete="off">
+                <input type="password" id="commentPasswd" class="comment-passwd" placeholder="비밀번호" maxlength="20" autocomplete="off">
+            <%
+            }
+            %>
             <textarea id="commentContent" class="comment-input" placeholder="댓글을 입력하세요" rows="2"></textarea>
             <button type="button" class="comment-submit" onclick="submitComment(<%= post.getId() %>)">댓글 등록</button>
         </form>
@@ -75,34 +102,15 @@
     </div>
 </div>
 
-<script>
-function likePost(postId) {
-    fetch('<%= root %>/community/hpost_action.jsp?action=like&id=' + postId)
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                document.getElementById('likes-count').textContent = data.likes;
-            }
-        })
-        .catch(() => {
-            // 에러 처리
-        });
-}
+<!-- 이미지 모달 -->
+<div id="imageModal" class="image-modal-overlay" onclick="closeImageModal()">
+    <div class="image-modal-content" onclick="event.stopPropagation()">
+        <button class="image-modal-close" onclick="closeImageModal()">&times;</button>
+        <button class="image-modal-nav image-modal-prev" onclick="prevImage()" id="prevBtn" style="display: none;">&lt;</button>
+        <button class="image-modal-nav image-modal-next" onclick="nextImage()" id="nextBtn" style="display: none;">&gt;</button>
+        <img id="modalImage" class="image-modal-img" src="" alt="확대된 이미지">
+        <div class="image-modal-counter" id="imageCounter" style="display: none;"></div>
+    </div>
+</div>
 
-function dislikePost(postId) {
-    fetch('<%= root %>/community/hpost_action.jsp?action=dislike&id=' + postId)
-        .then(response => response.json())
-        .then(data => {
-            if(data.success) {
-                document.getElementById('dislikes-count').textContent = data.dislikes;
-            }
-        })
-        .catch(() => {
-            // 에러 처리
-        });
-}
-
-window.addEventListener('DOMContentLoaded', function() {
-    // 댓글 관련 함수는 cumain.jsp에서 처리
-});
-</script> 
+ 

@@ -91,13 +91,8 @@ function loadPostDetail(postId) {
         .then(response => response.text())
         .then(html => {
             container.innerHTML = html;
-            try {
-                if (typeof updateCommentCount === 'function') {
-                    updateCommentCount(postId);
-                }
-            } catch (e) {
-                // 에러 무시
-            }
+            // 댓글 목록 로드
+            loadComments(postId);
         })
         .catch(() => {
             container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
@@ -122,12 +117,12 @@ function loadCategoryPosts(categoryId, categoryName) {
     // 카테고리 카드 스타일 업데이트
     const allCards = document.querySelectorAll('.category-card');
     allCards.forEach(card => card.classList.remove('active'));
-    const selectedCard = document.querySelector(`[data-category-id="${categoryId}"]`);
+    const selectedCard = document.querySelector('[data-category-id="' + categoryId + '"]');
     if (selectedCard) selectedCard.classList.add('active');
 
     // 구분선 텍스트 업데이트
     const dividerText = document.querySelector('.divider-text');
-    if (dividerText) dividerText.textContent = `📝 ${categoryName} 글 목록`;
+    if (dividerText) dividerText.textContent = '📝 ' + categoryName + ' 글 목록';
 
     // AJAX로 해당 카테고리 글 목록 JSP 불러오기
     if (categoryName.includes('헌팅썰')) {
@@ -146,27 +141,25 @@ function loadCategoryPosts(categoryId, categoryName) {
             container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
         });
     } else if (categoryName.includes('코스 추천')) {
-        container.innerHTML = `
-            <div class="category-posts">
-                <h3 class="posts-category-title">🗺️ 코스추천</h3>
-                <div class="posts-list">
-                    <div class="no-posts">
-                        <p>코스추천 기능은 준비 중입니다.</p>
-                    </div>
-                </div>
-            </div>
-        `;
+        container.innerHTML = 
+            '<div class="category-posts">' +
+                '<h3 class="posts-category-title">🗺️ 코스추천</h3>' +
+                '<div class="posts-list">' +
+                    '<div class="no-posts">' +
+                        '<p>코스추천 기능은 준비 중입니다.</p>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
     } else if (categoryName.includes('같이 갈래')) {
-        container.innerHTML = `
-            <div class="category-posts">
-                <h3 class="posts-category-title">👥 같이갈래</h3>
-                <div class="posts-list">
-                    <div class="no-posts">
-                        <p>같이갈래 기능은 준비 중입니다.</p>
-                    </div>
-                </div>
-            </div>
-        `;
+        container.innerHTML = 
+            '<div class="category-posts">' +
+                '<h3 class="posts-category-title">👥 같이갈래</h3>' +
+                '<div class="posts-list">' +
+                    '<div class="no-posts">' +
+                        '<p>같이갈래 기능은 준비 중입니다.</p>' +
+                    '</div>' +
+                '</div>' +
+            '</div>';
     }
 }
 
@@ -176,7 +169,24 @@ function reportPost(postId) {
         alert('로그인 후 이용해 주세요.');
         return;
     }
-    openReportModal(postId);
+    
+    // 이미 신고했는지 확인
+    checkReportStatus(postId);
+}
+
+function checkReportStatus(postId) {
+    fetch('<%=root%>/community/hpost_action.jsp?action=checkReport&id=' + postId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.alreadyReported) {
+                alert('글당 신고는 1번만 가능합니다.');
+                return;
+            }
+            openReportModal(postId);
+        })
+        .catch(() => {
+            alert('신고 상태 확인 중 오류가 발생했습니다.');
+        });
 }
 
 function openReportModal(postId) {
@@ -290,19 +300,271 @@ function submitReport() {
     });
 }
 
-// 댓글 관련 함수 (hpost_detail.jsp에서 이동)
-function updateCommentCount(postId) {
-    fetch('<%=root%>/community/hpost_comment_action.jsp?action=count&post_id=' + postId)
+
+
+function loadComments(postId) {
+    fetch('<%=root%>/community/hpost_comment_action.jsp?action=list&post_id=' + postId)
         .then(res => res.json())
         .then(data => {
             const space = document.getElementById('commentSpace');
             if (space) {
-                if (data.count === 0) {
-                    space.textContent = '아직 댓글이 없습니다';
+                if (data.length === 0) {
+                    space.innerHTML = '<div class="no-comments">아직 등록된 댓글이 없습니다</div>';
                 } else {
-                    space.textContent = '댓글 ' + data.count + '개';
+                    let html = '<div class="comment-header-section">';
+                    html += '<div class="comment-count">댓글: ' + data.length + '개</div>';
+                    html += '<div class="comment-sort-buttons">';
+                    html += '<button type="button" class="sort-btn active" onclick="changeCommentSort(\'latest\')">최신순</button>';
+                    html += '<button type="button" class="sort-btn" onclick="changeCommentSort(\'popular\')">인기순</button>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="comment-list">';
+                    data.forEach((comment, index) => {
+                        const date = new Date(comment.created_at).toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        html += '<div class="comment-item" data-id="' + comment.id + '">';
+                        html += '<div class="comment-header">';
+                        html += '<div class="comment-info">';
+                        // 로그인 상태에 따라 별 표시
+                        let nicknameDisplay = comment.nickname;
+                        if (comment.id_address && comment.id_address !== null && comment.id_address !== 'null') {
+                            nicknameDisplay = '⭐ ' + comment.nickname;
+                        }
+                        html += '<span class="comment-nickname-display">' + nicknameDisplay + '</span>';
+                        html += '<span class="comment-date">' + date + '</span>';
+                        html += '</div>';
+                        html += '<button class="comment-delete-btn" onclick="deleteComment(' + comment.id + ')">삭제</button>';
+                        html += '</div>';
+                        html += '<div class="comment-content">' + comment.content + '</div>';
+                        html += '<div class="comment-actions">';
+                        html += '<button class="comment-like-btn" onclick="likeComment(' + comment.id + ')">';
+                        html += '<span>👍</span> <span>좋아요 (' + comment.likes + ')</span>';
+                        html += '</button>';
+                        html += '<button class="comment-dislike-btn" onclick="dislikeComment(' + comment.id + ')">';
+                        html += '<span>👎</span> <span>싫어요 (' + comment.dislikes + ')</span>';
+                        html += '</button>';
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                    space.innerHTML = html;
                 }
             }
+        })
+        .catch(error => {
+            console.error('댓글 로드 중 오류 발생:', error);
+        });
+}
+
+function likeComment(commentId) {
+    fetch('<%=root%>/community/hpost_comment_vote_action.jsp?action=like&comment_id=' + commentId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 해당 댓글의 좋아요/싫어요 수 업데이트
+                const commentItem = document.querySelector('.comment-item[data-id="' + commentId + '"]');
+                if (commentItem) {
+                    const likeBtn = commentItem.querySelector('.comment-like-btn span:last-child');
+                    const dislikeBtn = commentItem.querySelector('.comment-dislike-btn span:last-child');
+                    if (likeBtn) likeBtn.textContent = '좋아요 (' + data.likes + ')';
+                    if (dislikeBtn) dislikeBtn.textContent = '싫어요 (' + data.dislikes + ')';
+                }
+            } else {
+                console.error('댓글 좋아요 실패:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('댓글 좋아요 오류:', error);
+        });
+}
+
+function dislikeComment(commentId) {
+    fetch('<%=root%>/community/hpost_comment_vote_action.jsp?action=dislike&comment_id=' + commentId)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // 해당 댓글의 좋아요/싫어요 수 업데이트
+                const commentItem = document.querySelector('.comment-item[data-id="' + commentId + '"]');
+                if (commentItem) {
+                    const likeBtn = commentItem.querySelector('.comment-like-btn span:last-child');
+                    const dislikeBtn = commentItem.querySelector('.comment-dislike-btn span:last-child');
+                    if (likeBtn) likeBtn.textContent = '좋아요 (' + data.likes + ')';
+                    if (dislikeBtn) dislikeBtn.textContent = '싫어요 (' + data.dislikes + ')';
+                }
+            } else {
+                console.error('댓글 싫어요 실패:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('댓글 싫어요 오류:', error);
+        });
+}
+
+// 댓글 정렬 함수
+function changeCommentSort(sortType) {
+    const postId = document.querySelector('.post-detail-container').dataset.postId;
+    const sortButtons = document.querySelectorAll('.comment-sort-buttons .sort-btn');
+    
+    // 버튼 활성화 상태 변경
+    sortButtons.forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+    
+    // 댓글 목록 새로고침 (정렬 타입 포함)
+    loadCommentsWithSort(postId, sortType);
+}
+
+// 정렬 타입을 포함한 댓글 로드 함수
+function loadCommentsWithSort(postId, sortType) {
+    fetch('<%=root%>/community/hpost_comment_action.jsp?action=list&post_id=' + postId + '&sort=' + sortType)
+        .then(res => res.json())
+        .then(data => {
+            const space = document.getElementById('commentSpace');
+            if (space) {
+                if (data.length === 0) {
+                    space.innerHTML = '<div class="no-comments">아직 등록된 댓글이 없습니다</div>';
+                } else {
+                    let html = '<div class="comment-header-section">';
+                    html += '<div class="comment-count">댓글: ' + data.length + '개</div>';
+                    html += '<div class="comment-sort-buttons">';
+                    html += '<button type="button" class="sort-btn ' + (sortType === 'latest' ? 'active' : '') + '" onclick="changeCommentSort(\'latest\')">최신순</button>';
+                    html += '<button type="button" class="sort-btn ' + (sortType === 'popular' ? 'active' : '') + '" onclick="changeCommentSort(\'popular\')">인기순</button>';
+                    html += '</div>';
+                    html += '</div>';
+                    html += '<div class="comment-list">';
+                    data.forEach((comment, index) => {
+                        const date = new Date(comment.created_at).toLocaleString('ko-KR', {
+                            year: 'numeric',
+                            month: '2-digit',
+                            day: '2-digit',
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        html += '<div class="comment-item" data-id="' + comment.id + '">';
+                        html += '<div class="comment-header">';
+                        html += '<div class="comment-info">';
+                        // 로그인 상태에 따라 별 표시
+                        let nicknameDisplay = comment.nickname;
+                        if (comment.id_address && comment.id_address !== null && comment.id_address !== 'null') {
+                            nicknameDisplay = '⭐ ' + comment.nickname;
+                        }
+                        html += '<span class="comment-nickname-display">' + nicknameDisplay + '</span>';
+                        html += '<span class="comment-date">' + date + '</span>';
+                        html += '</div>';
+                        html += '<button class="comment-delete-btn" onclick="deleteComment(' + comment.id + ')">삭제</button>';
+                        html += '</div>';
+                        html += '<div class="comment-content">' + comment.content + '</div>';
+                        html += '<div class="comment-actions">';
+                        html += '<button class="comment-like-btn" onclick="likeComment(' + comment.id + ')">';
+                        html += '<span>👍</span> <span>좋아요 (' + comment.likes + ')</span>';
+                        html += '</button>';
+                        html += '<button class="comment-dislike-btn" onclick="dislikeComment(' + comment.id + ')">';
+                        html += '<span>👎</span> <span>싫어요 (' + comment.dislikes + ')</span>';
+                        html += '</button>';
+                        html += '</div>';
+                        html += '</div>';
+                    });
+                    html += '</div>';
+                    space.innerHTML = html;
+                }
+            }
+        })
+        .catch(error => {
+            console.error('댓글 로드 중 오류 발생:', error);
+        });
+}
+
+function deleteComment(commentId) {
+    const passwd = prompt('댓글 삭제를 위해 비밀번호를 입력하세요:');
+    if (!passwd) {
+        return; // 취소한 경우
+    }
+    
+    const params = new URLSearchParams();
+    params.append('action', 'delete');
+    params.append('comment_id', commentId);
+    params.append('passwd', passwd);
+    
+    fetch('<%=root%>/community/hpost_comment_action.jsp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || '댓글이 삭제되었습니다.');
+            // 댓글 목록 새로고침
+            const postId = document.querySelector('.post-detail-container').dataset.postId;
+            loadComments(postId);
+        } else {
+            alert(data.error || '댓글 삭제에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('댓글 삭제 오류:', error);
+        alert('댓글 삭제 중 오류가 발생했습니다.');
+    });
+}
+
+// 좋아요/싫어요 함수들을 전역으로 정의
+function likePost(postId) {
+    fetch('<%=root%>/community/hpost_action.jsp?action=like&id=' + postId)
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                document.getElementById('likes-count').textContent = data.likes;
+                document.getElementById('dislikes-count').textContent = data.dislikes;
+                
+                // 버튼 상태 업데이트
+                const likeBtn = document.querySelector('.like-btn');
+                const dislikeBtn = document.querySelector('.dislike-btn');
+                
+                if (data.action === 'added' || data.action === 'changed') {
+                    likeBtn.classList.add('active');
+                    dislikeBtn.classList.remove('active');
+                } else if (data.action === 'removed') {
+                    likeBtn.classList.remove('active');
+                    dislikeBtn.classList.remove('active');
+                }
+            } else {
+                alert(data.error || '좋아요 처리에 실패했습니다.');
+            }
+        })
+        .catch(() => {
+            alert('좋아요 처리 중 오류가 발생했습니다.');
+        });
+}
+
+function dislikePost(postId) {
+    fetch('<%=root%>/community/hpost_action.jsp?action=dislike&id=' + postId)
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                document.getElementById('likes-count').textContent = data.likes;
+                document.getElementById('dislikes-count').textContent = data.dislikes;
+                
+                // 버튼 상태 업데이트
+                const likeBtn = document.querySelector('.like-btn');
+                const dislikeBtn = document.querySelector('.dislike-btn');
+                
+                if (data.action === 'added' || data.action === 'changed') {
+                    dislikeBtn.classList.add('active');
+                    likeBtn.classList.remove('active');
+                } else if (data.action === 'removed') {
+                    dislikeBtn.classList.remove('active');
+                    likeBtn.classList.remove('active');
+                }
+            } else {
+                alert(data.error || '싫어요 처리에 실패했습니다.');
+            }
+        })
+        .catch(() => {
+            alert('싫어요 처리 중 오류가 발생했습니다.');
         });
 }
 
@@ -337,10 +599,21 @@ function submitComment(postId) {
     .then(data => {
         if (data.success) {
             document.getElementById('commentContent').value = '';
-            document.getElementById('commentNickname').value = '';
             document.getElementById('commentPasswd').value = '';
+            
+            // 로그인된 사용자는 닉네임 유지, 비로그인 사용자는 초기화
+            const nicknameField = document.getElementById('commentNickname');
+            if (nicknameField && nicknameField.readOnly) {
+                // readonly인 경우 (로그인된 사용자) - 닉네임 유지
+                // 아무것도 하지 않음
+            } else {
+                // 편집 가능한 경우 (비로그인 사용자) - 초기화
+                nicknameField.value = '';
+            }
+            
             alert('댓글이 등록되었습니다.');
-            updateCommentCount(postId);
+            // 댓글 목록 새로고침
+            loadComments(postId);
         } else {
             alert('댓글 등록 실패');
         }
@@ -391,4 +664,191 @@ window.addEventListener('DOMContentLoaded', function() {
         }
     }
 });
+
+// 이미지 모달 관련 변수 (전역)
+let currentImageIndex = 0;
+let imageUrls = [];
+
+// 이미지 모달 열기 (전역 함수)
+window.openImageModal = function(imageSrc, imageIndex) {
+    // 현재 게시글의 모든 이미지 URL 수집
+    const postPhotos = document.querySelector('.post-photos');
+    if (postPhotos) {
+        const images = postPhotos.querySelectorAll('.post-photo');
+        imageUrls = Array.from(images).map(img => img.src);
+        currentImageIndex = imageIndex - 1; // 0-based index
+    }
+    
+    const modal = document.getElementById('imageModal');
+    const modalImg = document.getElementById('modalImage');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const counter = document.getElementById('imageCounter');
+    
+    modalImg.src = imageSrc;
+    modal.classList.add('show');
+    
+    // 이미지가 2개 이상일 때만 네비게이션 버튼과 카운터 표시
+    if (imageUrls.length > 1) {
+        prevBtn.style.display = 'flex';
+        nextBtn.style.display = 'flex';
+        counter.style.display = 'block';
+        updateImageCounter();
+    } else {
+        prevBtn.style.display = 'none';
+        nextBtn.style.display = 'none';
+        counter.style.display = 'none';
+    }
+    
+    // ESC 키로 모달 닫기
+    document.addEventListener('keydown', handleKeyDown);
+};
+
+// 이미지 모달 닫기 (전역 함수)
+window.closeImageModal = function() {
+    const modal = document.getElementById('imageModal');
+    modal.classList.remove('show');
+    document.removeEventListener('keydown', handleKeyDown);
+};
+
+// 이전 이미지 (전역 함수)
+window.prevImage = function() {
+    if (imageUrls.length > 1) {
+        currentImageIndex = (currentImageIndex - 1 + imageUrls.length) % imageUrls.length;
+        const modalImg = document.getElementById('modalImage');
+        modalImg.src = imageUrls[currentImageIndex];
+        updateImageCounter();
+    }
+};
+
+// 다음 이미지 (전역 함수)
+window.nextImage = function() {
+    if (imageUrls.length > 1) {
+        currentImageIndex = (currentImageIndex + 1) % imageUrls.length;
+        const modalImg = document.getElementById('modalImage');
+        modalImg.src = imageUrls[currentImageIndex];
+        updateImageCounter();
+    }
+};
+
+// 이미지 카운터 업데이트
+function updateImageCounter() {
+    const counter = document.getElementById('imageCounter');
+    counter.textContent = (currentImageIndex + 1) + ' / ' + imageUrls.length;
+}
+
+// 키보드 이벤트 처리
+function handleKeyDown(event) {
+    if (event.key === 'Escape') {
+        closeImageModal();
+    } else if (event.key === 'ArrowLeft') {
+        prevImage();
+    } else if (event.key === 'ArrowRight') {
+        nextImage();
+    }
+}
+
+// 정렬 관련 변수
+let currentSort = 'latest'; // 'latest' 또는 'popular'
+let currentCategoryId = 1; // 기본 카테고리 ID
+
+// 정렬 변경 함수
+function changeSort(sortType) {
+    currentSort = sortType;
+    
+    // 버튼 상태 업데이트
+    const sortBtns = document.querySelectorAll('.sort-btn');
+    sortBtns.forEach(btn => btn.classList.remove('active'));
+    
+    if (sortType === 'latest') {
+        document.querySelector('.sort-btn[onclick="changeSort(\'latest\')"]').classList.add('active');
+    } else if (sortType === 'popular') {
+        document.querySelector('.sort-btn[onclick="changeSort(\'popular\')"]').classList.add('active');
+    }
+    
+    // 현재 페이지에서 정렬된 목록 로드
+    loadSortedPosts(1);
+}
+
+// 정렬된 글 목록 로드
+function loadSortedPosts(page) {
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '<div class="loading-message"><p>글을 불러오는 중...</p></div>';
+    
+    const url = currentSort === 'latest' 
+        ? '<%=root%>/community/hpost_list.jsp?page=' + page
+        : '<%=root%>/community/hpost_list.jsp?sort=popular&page=' + page;
+    
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
+        });
+}
+
+// 카테고리별 글 로드 함수 수정
+function loadCategoryPosts(categoryId, categoryName) {
+    currentCategoryId = categoryId;
+    currentSort = 'latest'; // 카테고리 변경 시 최신순으로 초기화
+    
+    // 카테고리 카드 활성화
+    const categoryCards = document.querySelectorAll('.category-card');
+    categoryCards.forEach(card => card.classList.remove('active'));
+    
+    const selectedCard = document.querySelector('[data-category-id="' + categoryId + '"]');
+    if (selectedCard) selectedCard.classList.add('active');
+    
+    // 구분선 텍스트 업데이트
+    const dividerText = document.querySelector('.divider-text');
+    if (dividerText) dividerText.textContent = '📝 ' + categoryName + ' 글 목록';
+    
+    // 글 목록 로드
+    const container = document.getElementById('posts-container');
+    container.innerHTML = '<div class="loading-message"><p>글을 불러오는 중...</p></div>';
+    
+    fetch('<%=root%>/community/hpost_list.jsp?category=' + categoryId)
+        .then(response => response.text())
+        .then(html => {
+            container.innerHTML = html;
+        })
+        .catch(() => {
+            container.innerHTML = '<div class="error-message"><p>글을 불러오는데 실패했습니다.</p></div>';
+        });
+}
+
+// 글 삭제 함수 (전역 함수)
+window.deletePost = function(postId) {
+    const passwd = prompt('글을 삭제하려면 비밀번호를 입력하세요:');
+    if (!passwd) {
+        return; // 취소한 경우
+    }
+    
+    const params = new URLSearchParams();
+    params.append('action', 'delete');
+    params.append('id', postId);
+    params.append('passwd', passwd);
+    
+    fetch('<%=root%>/community/hpost_delete_action.jsp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: params.toString()
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message || '글이 삭제되었습니다.');
+            // 글 상세 페이지에서 목록으로 돌아가기
+            loadCategoryPosts(currentCategoryId, '헌팅썰');
+        } else {
+            alert(data.error || '글 삭제에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('글 삭제 오류:', error);
+        alert('글 삭제 중 오류가 발생했습니다.');
+    });
+}
 </script>

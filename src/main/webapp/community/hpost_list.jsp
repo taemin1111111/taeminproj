@@ -3,10 +3,13 @@
 <%@ page import="java.text.SimpleDateFormat" %>
 <%@ page import="hpost.HpostDao" %>
 <%@ page import="hpost.HpostDto" %>
+<%@ page import="hottalk_comment.Hottalk_CommentDao" %>
+
 
 <%
     String root = request.getContextPath();
     HpostDao dao = new HpostDao();
+    Hottalk_CommentDao commentDao = new Hottalk_CommentDao();
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
     
     // 페이징 처리
@@ -21,38 +24,77 @@
     }
     int start = (currentPage - 1) * perPage;
     
-    List<HpostDto> posts = dao.getPostsByCategory(1, start, perPage);
-    int totalCount = dao.getTotalCountByCategory(1);
+    // 카테고리 ID 처리
+    int categoryId = 1; // 기본값
+    if(request.getParameter("category") != null) {
+        try {
+            categoryId = Integer.parseInt(request.getParameter("category"));
+        } catch(NumberFormatException e) {
+            categoryId = 1;
+        }
+    }
+    
+    // 정렬 타입 처리
+    String sortType = request.getParameter("sort");
+    List<HpostDto> posts;
+    int totalCount;
+    
+    if("popular".equals(sortType)) {
+        // 인기글 정렬
+        posts = dao.getPopularPostsByCategory(categoryId, start, perPage);
+        totalCount = dao.getTotalCountByCategory(categoryId);
+    } else {
+        // 최신순 정렬 (기본)
+        posts = dao.getPostsByCategory(categoryId, start, perPage);
+        totalCount = dao.getTotalCountByCategory(categoryId);
+    }
+    
     int totalPages = (int) Math.ceil((double) totalCount / perPage);
 %>
 
 <div class="category-posts">
-    <h3 class="posts-category-title">❤️ 헌팅썰</h3>
+    <h3 class="posts-category-title"><%= "popular".equals(sortType) ? "🔥 헌팅썰 인기글" : "❤️ 헌팅썰" %></h3>
     <div class="posts-controls">
         <div class="sort-buttons">
-            <button type="button" class="sort-btn active" onclick="changeSort('latest')">최신순</button>
-            <button type="button" class="sort-btn" onclick="changeSort('popular')">인기글</button>
+            <button type="button" class="sort-btn <%= "popular".equals(sortType) ? "" : "active" %>" onclick="changeSort('latest')">최신순</button>
+            <button type="button" class="sort-btn <%= "popular".equals(sortType) ? "active" : "" %>" onclick="changeSort('popular')">인기글</button>
         </div>
         <button type="button" onclick="loadWriteForm()" class="write-btn-small">글쓰기</button>
     </div>
     <div class="posts-table-header">
-        <div class="col-nickname">닉네임</div>
+        <% if("popular".equals(sortType)) { %>
+            <div class="col-rank">순위</div>
+        <% } %>
+        <div class="col-nickname">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;닉네임</div>
         <div class="col-title">제목</div>
         <div class="col-likes">좋아요</div>
         <div class="col-dislikes">싫어요</div>
+        <div class="col-comments">댓글수</div>
         <div class="col-views">조회수</div>
         <div class="col-date">글쓴 날짜</div>
     </div>
     <div class="posts-list">
         <% if(totalCount > 0 && posts != null && !posts.isEmpty()) {
-            for(HpostDto post : posts) { %>
+            for(int i = 0; i < posts.size(); i++) {
+                HpostDto post = posts.get(i);
+                int rank = start + i + 1; %>
                 <div class="posts-table-row" id="post<%= post.getId() %>">
-                    <div class="col-nickname"><%= post.getNickname() != null ? post.getNickname() : post.getUserid() %></div>
+                    <% if("popular".equals(sortType)) { %>
+                        <div class="col-rank" style="color: #ff6b6b; font-weight: bold;"><%= rank %>위</div>
+                    <% } %>
+                    <div class="col-nickname">
+                        <% if(post.getUserid() != null && !post.getUserid().isEmpty() && !post.getUserid().equals("null")) { %>
+                            ⭐ <%= post.getNickname() != null ? post.getNickname() : post.getUserid() %>
+                        <% } else { %>
+                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<%= post.getNickname() != null ? post.getNickname() : "" %>
+                        <% } %>
+                    </div>
                     <div class="col-title">
                         <a href="javascript:void(0)" onclick="loadPostDetail(<%= post.getId() %>)"><%= post.getTitle() %></a>
                     </div>
                     <div class="col-likes">👍 <%= post.getLikes() %></div>
                     <div class="col-dislikes">👎 <%= post.getDislikes() %></div>
+                    <div class="col-comments">💬 <%= commentDao.getCommentCountByPostId(post.getId()) %></div>
                     <div class="col-views">👁️ <%= post.getViews() %></div>
                     <div class="col-date"><%= post.getCreated_at() != null ? sdf.format(post.getCreated_at()) : "" %></div>
                 </div>
@@ -101,8 +143,16 @@
 
 <script>
 function loadPage(page) {
+    // 현재 정렬 상태 확인
+    const activeSortBtn = document.querySelector('.sort-btn.active');
+    const sortType = activeSortBtn && activeSortBtn.textContent.includes('인기글') ? 'popular' : 'latest';
+    
     // AJAX로 페이지 로드
-    fetch('<%=root%>/community/hpost_list.jsp?page=' + page)
+    const url = '<%=root%>/community/hpost_list.jsp?page=' + page + 
+                (sortType === 'popular' ? '&sort=popular' : '') +
+                (categoryId !== 1 ? '&category=' + categoryId : '');
+    
+    fetch(url)
         .then(response => response.text())
         .then(html => {
             document.getElementById('posts-container').innerHTML = html;
@@ -119,11 +169,18 @@ function changeSort(sortType) {
     });
     event.target.classList.add('active');
     
-    // TODO: 실제 정렬 기능 구현
-    // 현재는 최신순만 구현되어 있음
-    if (sortType === 'popular') {
-        alert('인기글 정렬 기능은 준비 중입니다.');
-    }
+    // 정렬된 목록 로드
+    const url = '<%=root%>/community/hpost_list.jsp?sort=' + sortType +
+                (categoryId !== 1 ? '&category=' + categoryId : '');
+    
+    fetch(url)
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('posts-container').innerHTML = html;
+        })
+        .catch(() => {
+            // 에러 처리
+        });
 }
 
 function loadWriteForm() {

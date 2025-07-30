@@ -6,6 +6,7 @@ public class HpostDto {
     private int id;
     private int category_id;
     private String userid;
+    private String userip;
     private String title;
     private String content;
     private String photo1;
@@ -29,6 +30,9 @@ public class HpostDto {
 
     public String getUserid() { return userid; }
     public void setUserid(String userid) { this.userid = userid; }
+
+    public String getUserip() { return userip; }
+    public void setUserip(String userip) { this.userip = userip; }
 
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
