@@ -8,6 +8,9 @@
     String root = request.getContextPath();
     CCategoryDao dao = new CCategoryDao();
     List<CCategoryDto> categories = dao.getAllCategories();
+    
+    // URL 파라미터에서 sort 확인
+    String sortParam = request.getParameter("sort");
 %>
 
 <div class="community-container">
@@ -75,6 +78,17 @@
 <script>
 var isLoggedIn = <%= session.getAttribute("loginid") != null ? "true" : "false" %>;
 // showToast 함수 삭제
+
+// 페이지 로드 시 URL 파라미터 확인하여 인기글로 시작
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('sort') && urlParams.get('sort') === 'popular') {
+        // 인기글로 시작
+        setTimeout(() => {
+            changeSort('popular');
+        }, 100);
+    }
+});
 
 // 글 상세보기 로드 함수
 function loadPostDetail(postId) {
