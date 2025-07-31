@@ -3,6 +3,7 @@
 <%@ page import="DB.DbConnect" %>
 <%@ page import="Member.MemberDTO" %>
 <%@ page import="Member.MemberDAO" %>
+<%@ page import="EmailVerification.EmailVerificationDAO" %>
 
 <%
     request.setCharacterEncoding("UTF-8");
@@ -12,10 +13,10 @@
     String name     = request.getParameter("name");
     String email    = request.getParameter("email");
     String nickname = request.getParameter("nickname");
-    String phone    = request.getParameter("phone");
     String birthStr = request.getParameter("birth");
     String gender   = request.getParameter("gender");
     String provider = request.getParameter("provider");   // 이게 join_type 역할
+    String phone    = "";  // 휴대폰 번호는 빈 값으로 설정
 
     // 패스워드는 일반 회원가입만 받음
     String passwd = request.getParameter("passwd");
@@ -27,6 +28,20 @@
     Date birth = null;
     if (birthStr != null && !birthStr.isEmpty()) {
         birth = Date.valueOf(birthStr);   // yyyy-MM-dd 형태일 때만 가능
+    }
+
+    // 이메일 인증 확인 (일반 회원가입만)
+    if (!"naver".equals(provider)) {
+        EmailVerificationDAO emailDao = new EmailVerificationDAO();
+        if (!emailDao.isEmailVerified(email)) {
+%>
+            <script>
+                alert("이메일 인증을 완료해주세요.");
+                history.back();
+            </script>
+<%
+            return;
+        }
     }
 
     // dto에 담기

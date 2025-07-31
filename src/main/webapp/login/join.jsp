@@ -36,13 +36,14 @@
 
         <!-- 닉네임 -->
         <div class="mb-3">
-            <input type="text" name="nickname" class="form-control" placeholder="닉네임" required>
+            <div class="input-group">
+                <input type="text" name="nickname" id="nickname" class="form-control" placeholder="닉네임" required>
+                <button type="button" class="btn btn-outline-secondary" onclick="checkNickname()">중복확인</button>
+            </div>
+            <div id="nickCheckResult" class="mt-1 small"></div>
         </div>
 
-        <!-- 휴대폰번호 -->
-        <div class="mb-3">
-            <input type="text" name="phone" class="form-control" placeholder="휴대폰번호" required>
-        </div>
+
 
         <!-- 이메일 (이메일 필수 + 인증코드 발송) -->
         <div class="mb-3">
@@ -55,7 +56,11 @@
 
         <!-- 이메일 인증코드 입력 -->
         <div class="mb-3">
-            <input type="text" id="emailCodeInput" class="form-control" placeholder="이메일 인증코드 입력">
+            <div class="input-group">
+                
+                <input type="text" id="emailCodeInput" class="form-control" placeholder="이메일 인증코드 입력" disabled>
+                <button type="button" class="btn btn-outline-success" onclick="verifyEmailCode()" disabled>확인</button>
+            </div>
             <div id="emailCodeResult" class="mt-1 small"></div>
         </div>
 
@@ -105,7 +110,30 @@ function checkId() {
         });
 }
 
-// ✅ 이메일 인증 (API 자리만 만들어 놓음)
+// ✅ 닉네임 중복확인 (AJAX 연결)
+function checkNickname() {
+    const nickname = document.getElementById("nickname").value.trim();
+    if(nickname === "") {
+        document.getElementById("nickCheckResult").textContent = "닉네임을 입력하세요.";
+        document.getElementById("nickCheckResult").style.color = "red";
+        return;
+    }
+    fetch("<%=root%>/login/nickCheck.jsp?nickname=" + encodeURIComponent(nickname))
+        .then(res => res.text())
+        .then(result => {
+            if (result.trim() === "ok") {
+                document.getElementById("nickCheckResult").textContent = "사용가능한 닉네임입니다.";
+                document.getElementById("nickCheckResult").style.color = "green";
+            } else {
+                document.getElementById("nickCheckResult").textContent = "이미 사용중인 닉네임입니다.";
+                document.getElementById("nickCheckResult").style.color = "red";
+                document.getElementById("nickname").value = "";
+                document.getElementById("nickname").focus();
+            }
+        });
+}
+
+// ✅ 이메일 인증코드 발송
 function sendEmailCode() {
     const email = document.getElementById("email").value.trim();
     if(email === "") {
@@ -113,10 +141,107 @@ function sendEmailCode() {
         document.getElementById("emailResult").style.color = "red";
         return;
     }
-    // 👉 여기서 실제 이메일 전송 API 연동 가능!
-    // 지금은 그냥 성공 가정
-    document.getElementById("emailResult").innerText = "인증코드가 발송되었습니다.";
-    document.getElementById("emailResult").style.color = "green";
+    
+    // 이메일 형식 검증
+    const emailRegex = /^[A-Za-z0-9+_.-]+@(.+)$/;
+    if (!emailRegex.test(email)) {
+        document.getElementById("emailResult").innerText = "올바른 이메일 형식이 아닙니다.";
+        document.getElementById("emailResult").style.color = "red";
+        return;
+    }
+    
+    // 버튼 비활성화
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "발송중...";
+    
+    fetch("<%=root%>/login/sendEmailVerification.jsp", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "email=" + encodeURIComponent(email)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("emailResult").innerText = data.message;
+            document.getElementById("emailResult").style.color = "green";
+            // 인증코드 입력 필드와 확인 버튼 활성화
+            document.getElementById("emailCodeInput").disabled = false;
+            document.getElementById("emailCodeInput").focus();
+            document.querySelector('button[onclick="verifyEmailCode()"]').disabled = false;
+        } else {
+            document.getElementById("emailResult").innerText = data.message;
+            document.getElementById("emailResult").style.color = "red";
+        }
+    })
+    .catch(error => {
+        document.getElementById("emailResult").innerText = "오류가 발생했습니다.";
+        document.getElementById("emailResult").style.color = "red";
+    })
+    .finally(() => {
+        // 버튼 다시 활성화
+        button.disabled = false;
+        button.textContent = originalText;
+    });
+}
+
+// ✅ 이메일 인증코드 확인
+function verifyEmailCode() {
+    const email = document.getElementById("email").value.trim();
+    const code = document.getElementById("emailCodeInput").value.trim();
+    
+    if(email === "") {
+        document.getElementById("emailCodeResult").innerText = "이메일을 먼저 입력하세요.";
+        document.getElementById("emailCodeResult").style.color = "red";
+        return;
+    }
+    
+    if(code === "") {
+        document.getElementById("emailCodeResult").innerText = "인증코드를 입력하세요.";
+        document.getElementById("emailCodeResult").style.color = "red";
+        return;
+    }
+    
+    // 버튼 비활성화
+    const button = event.target;
+    const originalText = button.textContent;
+    button.disabled = true;
+    button.textContent = "확인중...";
+    
+    fetch("<%=root%>/login/verifyEmailCode.jsp", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: "email=" + encodeURIComponent(email) + "&code=" + encodeURIComponent(code)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById("emailCodeResult").innerText = data.message;
+            document.getElementById("emailCodeResult").style.color = "green";
+            // 인증 완료 표시
+            document.getElementById("email").readOnly = true;
+            document.getElementById("emailCodeInput").readOnly = true;
+            // 이메일 인증 완료 플래그 설정
+            window.emailVerified = true;
+        } else {
+            document.getElementById("emailCodeResult").innerText = data.message;
+            document.getElementById("emailCodeResult").style.color = "red";
+        }
+    })
+    .catch(error => {
+        document.getElementById("emailCodeResult").innerText = "오류가 발생했습니다.";
+        document.getElementById("emailCodeResult").style.color = "red";
+    })
+    .finally(() => {
+        // 버튼 다시 활성화
+        button.disabled = false;
+        button.textContent = originalText;
+    });
 }
 
 // ✅ 비밀번호 검증
@@ -158,6 +283,13 @@ function checkBeforeSubmit() {
         alert("비밀번호 조건 또는 비밀번호 확인을 다시 확인하세요.");
         return false;
     }
+    
+    // 이메일 인증 확인
+    if (!window.emailVerified) {
+        alert("이메일 인증을 완료해주세요.");
+        return false;
+    }
+    
     return true;
 }
 </script>
