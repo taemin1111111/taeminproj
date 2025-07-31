@@ -39,17 +39,7 @@
         birth = Date.valueOf(birthStr);   // yyyy-MM-dd 형태일 때만 가능
     }
 
-    // 이메일 중복 확인
-    MemberDAO checkDao = new MemberDAO();
-    if (checkDao.isDuplicateEmail(email)) {
-%>
-        <script>
-            alert("이미 사용 중인 이메일입니다.");
-            history.back();
-        </script>
-<%
-        return;
-    }
+
 
     // 이메일 인증 확인 (일반 회원가입만)
     if (!"naver".equals(provider)) {

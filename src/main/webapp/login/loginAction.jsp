@@ -53,9 +53,9 @@
     // 로그인 성공 - 세션에 로그인 정보 저장
     session.setAttribute("loginid", userid);
     session.setAttribute("nickname", member.getNickname());
+    session.setAttribute("provider", member.getProvider());
 %>
 
 <script>
-    alert("로그인되었습니다!");
     location.href="<%=request.getContextPath()%>/index.jsp";
 </script> 

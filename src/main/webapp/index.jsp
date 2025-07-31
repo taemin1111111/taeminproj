@@ -39,6 +39,8 @@
 <link rel="stylesheet" href="<%=root%>/css/join.css">
 <!-- 커뮤니티 -->
 <link rel="stylesheet" href="<%=root%>/css/community.css">
+<!-- 마이페이지 -->
+<link rel="stylesheet" href="<%=root%>/css/mypage.css">
 </head>
 <body>
 

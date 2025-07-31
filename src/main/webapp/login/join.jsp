@@ -136,7 +136,7 @@ function checkNickname() {
 
 
 
-// ✅ 이메일 인증코드 발송
+// ✅ 이메일 인증코드 발송 (이메일 중복 체크 포함)
 function sendEmailCode() {
     const email = document.getElementById("email").value.trim();
     if(email === "") {
@@ -157,38 +157,65 @@ function sendEmailCode() {
     const button = event.target;
     const originalText = button.textContent;
     button.disabled = true;
-    button.textContent = "발송중...";
+    button.textContent = "확인중...";
     
-    fetch("<%=root%>/login/sendEmailVerification.jsp", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded",
-        },
-        body: "email=" + encodeURIComponent(email)
-    })
-    .then(res => res.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById("emailResult").innerText = data.message;
-            document.getElementById("emailResult").style.color = "green";
-            // 인증코드 입력 필드와 확인 버튼 활성화
-            document.getElementById("emailCodeInput").disabled = false;
-            document.getElementById("emailCodeInput").focus();
-            document.querySelector('button[onclick="verifyEmailCode()"]').disabled = false;
-        } else {
-            document.getElementById("emailResult").innerText = data.message;
+    // 먼저 이메일 중복 체크
+    fetch("<%=root%>/login/emailCheck.jsp?email=" + encodeURIComponent(email))
+        .then(res => res.text())
+        .then(result => {
+            if (result.trim() === "duplicate") {
+                // 이메일 중복인 경우
+                document.getElementById("emailResult").innerText = "해당 이메일로 가입된 계정이 있습니다.";
+                document.getElementById("emailResult").style.color = "red";
+                // 이메일 입력 필드 초기화
+                document.getElementById("email").value = "";
+                document.getElementById("email").focus();
+                return;
+            } else if (result.trim() === "ok") {
+                // 이메일 중복이 아닌 경우, 기존 이메일 인증 프로세스 진행
+                button.textContent = "발송중...";
+                
+                return fetch("<%=root%>/login/sendEmailVerification.jsp", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/x-www-form-urlencoded",
+                    },
+                    body: "email=" + encodeURIComponent(email)
+                });
+            } else {
+                throw new Error("이메일 중복 체크 중 오류가 발생했습니다.");
+            }
+        })
+        .then(res => {
+            if (res && res.json) {
+                return res.json();
+            }
+            return null;
+        })
+        .then(data => {
+            if (data) {
+                if (data.success) {
+                    document.getElementById("emailResult").innerText = data.message;
+                    document.getElementById("emailResult").style.color = "green";
+                    // 인증코드 입력 필드와 확인 버튼 활성화
+                    document.getElementById("emailCodeInput").disabled = false;
+                    document.getElementById("emailCodeInput").focus();
+                    document.querySelector('button[onclick="verifyEmailCode()"]').disabled = false;
+                } else {
+                    document.getElementById("emailResult").innerText = data.message;
+                    document.getElementById("emailResult").style.color = "red";
+                }
+            }
+        })
+        .catch(error => {
+            document.getElementById("emailResult").innerText = "오류가 발생했습니다.";
             document.getElementById("emailResult").style.color = "red";
-        }
-    })
-    .catch(error => {
-        document.getElementById("emailResult").innerText = "오류가 발생했습니다.";
-        document.getElementById("emailResult").style.color = "red";
-    })
-    .finally(() => {
-        // 버튼 다시 활성화
-        button.disabled = false;
-        button.textContent = originalText;
-    });
+        })
+        .finally(() => {
+            // 버튼 다시 활성화
+            button.disabled = false;
+            button.textContent = originalText;
+        });
 }
 
 
