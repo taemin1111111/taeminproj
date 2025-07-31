@@ -7,6 +7,7 @@
     <h3 class="mb-4 fw-bold text-center">회원가입</h3>
 
     <form method="post" action="<%=root%>/login/joinAction.jsp" onsubmit="return checkBeforeSubmit()">
+        <input type="hidden" name="provider" value="site">
 
         <!-- 아이디 -->
         <div class="mb-3">
@@ -133,6 +134,8 @@ function checkNickname() {
         });
 }
 
+
+
 // ✅ 이메일 인증코드 발송
 function sendEmailCode() {
     const email = document.getElementById("email").value.trim();
@@ -187,6 +190,8 @@ function sendEmailCode() {
         button.textContent = originalText;
     });
 }
+
+
 
 // ✅ 이메일 인증코드 확인
 function verifyEmailCode() {

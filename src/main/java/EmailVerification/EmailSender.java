@@ -8,14 +8,14 @@ import java.util.Properties;
 
 public class EmailSender {
     
-    // Brevo SMTP 설정
-    private static final String SMTP_HOST = "smtp-relay.brevo.com";
-    private static final String SMTP_PORT = "587";
-    private static final String SMTP_USERNAME = "93959a001@smtp-brevo.com";
-    private static final String SMTP_PASSWORD = "AgjZXQb4nBhFqDfP";
-    private static final String FROM_EMAIL = "93959a001@smtp-brevo.com";
-    private static final String FROM_NAME = "어디핫?";
-    
+	// Brevo SMTP 설정
+	private static final String SMTP_HOST = "smtp-relay.brevo.com";
+	private static final String SMTP_PORT = "587";
+	private static final String SMTP_USERNAME = "93959a002@smtp-brevo.com";   // 인증된 이메일
+	private static final String SMTP_PASSWORD = "gyEmT1QbCR5XjwaN";          // Master Password (SMTP Key)
+	private static final String FROM_EMAIL = "chotaemin0920@gmail.com";     // 보내는 사람 주소
+	private static final String FROM_NAME = "어디핫?";                        // 보내는 사람 이름
+
     // 이메일 발송 메서드
     public static boolean sendVerificationEmail(String toEmail, String verificationCode) {
         try {

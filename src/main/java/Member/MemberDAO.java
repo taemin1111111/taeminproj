@@ -20,7 +20,7 @@ public class MemberDAO {
             pstmt.setString(2, dto.getPasswd());
             pstmt.setString(3, dto.getName());
             pstmt.setString(4, dto.getNickname());
-            pstmt.setString(5, dto.getPhone());
+            pstmt.setString(5, dto.getPhone() == null ? null : dto.getPhone());
             pstmt.setString(6, dto.getEmail());
             pstmt.setString(7, dto.getGender());
             pstmt.setDate(8, dto.getBirth() == null ? null : new java.sql.Date(dto.getBirth().getTime()));

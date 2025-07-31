@@ -16,7 +16,16 @@
     String birthStr = request.getParameter("birth");
     String gender   = request.getParameter("gender");
     String provider = request.getParameter("provider");   // 이게 join_type 역할
-    String phone    = "";  // 휴대폰 번호는 빈 값으로 설정
+    String phone    = null;  // 휴대폰 번호는 null로 설정
+
+    // 디버깅용 출력
+    System.out.println("=== 회원가입 디버깅 ===");
+    System.out.println("userid: " + userid);
+    System.out.println("name: " + name);
+    System.out.println("email: " + email);
+    System.out.println("nickname: " + nickname);
+    System.out.println("provider: " + provider);
+    System.out.println("=====================");
 
     // 패스워드는 일반 회원가입만 받음
     String passwd = request.getParameter("passwd");
@@ -28,6 +37,18 @@
     Date birth = null;
     if (birthStr != null && !birthStr.isEmpty()) {
         birth = Date.valueOf(birthStr);   // yyyy-MM-dd 형태일 때만 가능
+    }
+
+    // 이메일 중복 확인
+    MemberDAO checkDao = new MemberDAO();
+    if (checkDao.isDuplicateEmail(email)) {
+%>
+        <script>
+            alert("이미 사용 중인 이메일입니다.");
+            history.back();
+        </script>
+<%
+        return;
     }
 
     // 이메일 인증 확인 (일반 회원가입만)
