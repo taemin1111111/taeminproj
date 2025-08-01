@@ -19,6 +19,16 @@
   var loginUserId = '<%= (loginId != null ? loginId : "") %>';
   var regionNameList = [<% for(int i=0;i<regionNameList.size();i++){ %>'<%=regionNameList.get(i).replace("'", "\\'")%>'<% if(i<regionNameList.size()-1){%>,<%}}%>];
   var hotplaceNameList = [<% for(int i=0;i<hotplaceNameList.size();i++){ %>'<%=hotplaceNameList.get(i).replace("'", "\\'")%>'<% if(i<hotplaceNameList.size()-1){%>,<%}}%>];
+  
+  // URL 파라미터에서 lat, lng 가져오기
+  var urlParams = new URLSearchParams(window.location.search);
+  var targetLat = urlParams.get('lat');
+  var targetLng = urlParams.get('lng');
+  
+  // URL 파라미터가 있으면 해당 위치로 이동할 준비
+  if (targetLat && targetLng) {
+    console.log('URL 파라미터 감지: lat=' + targetLat + ', lng=' + targetLng);
+  }
 </script>
 <script>
   var dongToRegionId = {
@@ -140,6 +150,19 @@
     level: 7
   };
   var map = new kakao.maps.Map(mapContainer, mapOptions);
+
+  // URL 파라미터에서 lat, lng 가져오기
+  var urlParams = new URLSearchParams(window.location.search);
+  var targetLat = urlParams.get('lat');
+  var targetLng = urlParams.get('lng');
+  
+  // URL 파라미터가 있으면 해당 위치로 이동
+  if (targetLat && targetLng) {
+    console.log('URL 파라미터 감지: lat=' + targetLat + ', lng=' + targetLng);
+    var targetPosition = new kakao.maps.LatLng(parseFloat(targetLat), parseFloat(targetLng));
+    map.setCenter(targetPosition);
+    map.setLevel(5); // 줌 레벨 조정
+  }
 
   // 마커/오버레이 배열
   var hotplaceMarkers = [], hotplaceLabels = [], hotplaceInfoWindows = [];

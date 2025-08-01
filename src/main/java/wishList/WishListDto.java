@@ -7,6 +7,7 @@ public class WishListDto {
     private String userid;      // 유저 ID (member.userid 참조)
     private int place_id;       // 핫플레이스 ID (hotplace_info.id 참조)
     private Timestamp wish_date; // 찜한 날짜
+    private String personal_note; // 개인 메모
 
     // 생성자
     public WishListDto() {}
@@ -16,6 +17,14 @@ public class WishListDto {
         this.userid = userid;
         this.place_id = place_id;
         this.wish_date = wish_date;
+    }
+
+    public WishListDto(int id, String userid, int place_id, Timestamp wish_date, String personal_note) {
+        this.id = id;
+        this.userid = userid;
+        this.place_id = place_id;
+        this.wish_date = wish_date;
+        this.personal_note = personal_note;
     }
 
     // Getter & Setter
@@ -49,5 +58,13 @@ public class WishListDto {
 
     public void setWish_date(Timestamp wish_date) {
         this.wish_date = wish_date;
+    }
+
+    public String getPersonal_note() {
+        return personal_note;
+    }
+
+    public void setPersonal_note(String personal_note) {
+        this.personal_note = personal_note;
     }
 }
