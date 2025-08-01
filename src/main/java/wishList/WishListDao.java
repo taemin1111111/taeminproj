@@ -143,7 +143,7 @@ public class WishListDao {
     public List<Map<String, Object>> getWishListWithPlaceInfo(String userid) {
         List<Map<String, Object>> list = new ArrayList<>();
         String sql = "SELECT w.id, w.userid, w.place_id, w.wish_date, w.personal_note, " +
-                    "h.name as place_name, h.address, h.lat, h.lng, " +
+                    "h.name as place_name, h.address, h.lat, h.lng, h.category_id, " +
                     "COALESCE(pc.name, '기타') as category_name " +
                     "FROM wishlist w " +
                     "LEFT JOIN hotplace_info h ON w.place_id = h.id " +
@@ -167,6 +167,7 @@ public class WishListDao {
                     map.put("address", rs.getString("address"));
                     map.put("lat", rs.getDouble("lat"));
                     map.put("lng", rs.getDouble("lng"));
+                    map.put("category_id", rs.getInt("category_id"));
                     map.put("category_name", rs.getString("category_name"));
                     map.put("personal_note", rs.getString("personal_note"));
                     

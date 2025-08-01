@@ -187,6 +187,13 @@
                 <% } %>
             </div>
         <% } %>
+        
+        <!-- 전체 위시리스트 보기 버튼 -->
+        <div class="wishlist-view-all">
+            <a href="<%= root %>/index.jsp?main=mypage/mywishlist.jsp" class="btn btn-outline-primary btn-lg">
+                <i class="bi bi-plus-circle me-2"></i>전체 위시 리스트 보기
+            </a>
+        </div>
     </div>
 </div>
 
