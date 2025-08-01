@@ -212,5 +212,16 @@ public class WishListDao {
         return false;
     }
 
+    // 회원 탈퇴용: 사용자의 모든 위시리스트 삭제
+    public boolean deleteAllWishListByUserid(String userid, Connection conn) {
+        String sql = "DELETE FROM wishlist WHERE userid = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            return pstmt.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 
 }

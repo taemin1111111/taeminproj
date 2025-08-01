@@ -120,4 +120,23 @@ public class MemberDAO {
         return dto;
     }
 
+    // Connection 객체 반환 (트랜잭션용)
+    public Connection getConnection() throws SQLException {
+        return db.getConnection();
+    }
+
+    // 회원 삭제
+    public boolean deleteMember(String userid, Connection conn) {
+        boolean success = false;
+        String sql = "DELETE FROM member WHERE userid=?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
 }

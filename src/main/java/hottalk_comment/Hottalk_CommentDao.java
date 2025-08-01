@@ -145,6 +145,48 @@ public class Hottalk_CommentDao {
         return false;
     }
 
+    // 사용자별 댓글 조회 (최신순)
+    public List<Hottalk_CommentDto> getCommentsByUserid(String userid, int limit) {
+        List<Hottalk_CommentDto> list = new ArrayList<>();
+        String sql = "SELECT * FROM hottalk_comment WHERE id_address = ? ORDER BY created_at DESC LIMIT ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            pstmt.setInt(2, limit);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                list.add(mapDto(rs));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 사용자별 댓글 개수 조회
+    public int getCommentCountByUserid(String userid) {
+        String sql = "SELECT COUNT(*) FROM hottalk_comment WHERE id_address = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    // 회원 탈퇴용: 사용자의 모든 댓글 삭제
+    public boolean deleteAllCommentsByUserid(String userid, Connection conn) {
+        String sql = "DELETE FROM hottalk_comment WHERE id_address = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ResultSet -> Dto 매핑
     private Hottalk_CommentDto mapDto(ResultSet rs) throws SQLException {
         Hottalk_CommentDto dto = new Hottalk_CommentDto();

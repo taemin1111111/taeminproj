@@ -51,15 +51,6 @@
         </div>
     </div>
 
-    <!-- 카테고리 필터 버튼 -->
-    <div class="wishlist-category-filter">
-        <button class="category-filter-btn active" data-category="all">전체</button>
-        <button class="category-filter-btn marker-club" data-category="1">C</button>
-        <button class="category-filter-btn marker-hunting" data-category="2">H</button>
-        <button class="category-filter-btn marker-lounge" data-category="3">L</button>
-        <button class="category-filter-btn marker-pocha" data-category="4">P</button>
-    </div>
-
     <!-- 위시리스트 내용 -->
     <div class="wishlist-content-section">
         <% if(wishList.isEmpty()) { %>
@@ -77,6 +68,15 @@
                 </a>
             </div>
         <% } else { %>
+            <!-- 카테고리 필터 버튼 -->
+            <div class="wishlist-category-filter">
+                <button class="category-filter-btn active" data-category="all">전체</button>
+                <button class="category-filter-btn marker-club" data-category="1">C</button>
+                <button class="category-filter-btn marker-hunting" data-category="2">H</button>
+                <button class="category-filter-btn marker-lounge" data-category="3">L</button>
+                <button class="category-filter-btn marker-pocha" data-category="4">P</button>
+            </div>
+            
             <!-- 위시리스트 그리드 -->
             <div class="wishlist-full-grid">
                 <% for(Map<String, Object> wish : wishList) { %>

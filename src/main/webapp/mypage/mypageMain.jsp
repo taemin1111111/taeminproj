@@ -4,6 +4,10 @@
 <%@ page import="Member.MemberDTO" %>
 <%@ page import="Member.MemberDAO" %>
 <%@ page import="wishList.WishListDao" %>
+<%@ page import="hpost.HpostDao" %>
+<%@ page import="hpost.HpostDto" %>
+<%@ page import="hottalk_comment.Hottalk_CommentDao" %>
+<%@ page import="hottalk_comment.Hottalk_CommentDto" %>
 <%
     String root = request.getContextPath();
     String loginId = (String)session.getAttribute("loginid");
@@ -27,6 +31,16 @@
     WishListDao wishDao = new WishListDao();
     List<Map<String, Object>> wishList = wishDao.getWishListWithPlaceInfo(loginId);
     int wishCount = wishDao.getWishListCount(loginId);
+    
+    // 내가 쓴 게시글 정보 가져오기
+    HpostDao postDao = new HpostDao();
+    List<HpostDto> myPosts = postDao.getPostsByUserid(loginId, 5); // 최근 5개
+    int postCount = postDao.getPostCountByUserid(loginId);
+    
+    // 내가 쓴 댓글 정보 가져오기
+    Hottalk_CommentDao commentDao = new Hottalk_CommentDao();
+    List<Hottalk_CommentDto> myComments = commentDao.getCommentsByUserid(loginId, 5); // 최근 5개
+    int commentCount = commentDao.getCommentCountByUserid(loginId);
 %>
 
 <div class="mypage-container">
@@ -90,8 +104,8 @@
             <button class="btn btn-outline-primary me-2">
                 <i class="bi bi-pencil me-1"></i>정보 수정
             </button>
-            <button class="btn btn-outline-secondary">
-                <i class="bi bi-gear me-1"></i>설정
+            <button class="btn btn-outline-danger" onclick="showWithdrawModal()">
+                <i class="bi bi-person-x me-1"></i>회원 탈퇴
             </button>
         </div>
     </div>
@@ -197,6 +211,112 @@
     </div>
 </div>
 
+<!-- 내가 쓴 게시글 섹션 -->
+<div class="my-posts-section">
+    <div class="section-header">
+        <h3 class="section-title">
+            <i class="bi bi-file-text me-2"></i>
+            내가 쓴 게시글
+        </h3>
+        <span class="section-count">총 <strong><%= postCount %></strong>개의 게시글</span>
+    </div>
+    
+    <% if(myPosts.isEmpty()) { %>
+        <div class="empty-posts">
+            <p class="empty-text">아직 작성한 게시글이 없어요</p>
+        </div>
+    <% } else { %>
+        <div class="posts-list">
+            <% for(HpostDto post : myPosts) { %>
+                <div class="post-item">
+                    <div class="post-header">
+                        <span class="post-nickname"><%= post.getNickname() %></span>
+                        <span class="post-date"><%= post.getCreated_at().toString().substring(0, 10) %></span>
+                    </div>
+                    <div class="post-title" onclick="viewPostDetail(<%= post.getId() %>)" style="cursor: pointer;">
+                        <%= post.getTitle() %>
+                    </div>
+                    <div class="post-stats">
+                        <span class="stat-item">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <%= post.getLikes() %>
+                        </span>
+                        <span class="stat-item">
+                            <i class="bi bi-hand-thumbs-down"></i>
+                            <%= post.getDislikes() %>
+                        </span>
+                        <span class="stat-item">
+                            <i class="bi bi-chat"></i>
+                            <%= commentDao.getCommentCountByPostId(post.getId()) %>
+                        </span>
+                        <span class="stat-item">
+                            <i class="bi bi-eye"></i>
+                            <%= post.getViews() %>
+                        </span>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+        
+        <% if(postCount > 5) { %>
+            <div class="view-all-posts">
+                <a href="#" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-right me-1"></i>전체 게시글 보기
+                </a>
+            </div>
+        <% } %>
+    <% } %>
+</div>
+
+<!-- 내가 쓴 댓글 섹션 -->
+<div class="my-comments-section">
+    <div class="section-header">
+        <h3 class="section-title">
+            <i class="bi bi-chat-dots me-2"></i>
+            내가 쓴 댓글
+        </h3>
+        <span class="section-count">총 <strong><%= commentCount %></strong>개의 댓글</span>
+    </div>
+    
+    <% if(myComments.isEmpty()) { %>
+        <div class="empty-comments">
+            <p class="empty-text">아직 작성한 댓글이 없어요</p>
+        </div>
+    <% } else { %>
+        <div class="comments-list">
+            <% for(Hottalk_CommentDto comment : myComments) { %>
+                <div class="comment-item">
+                    <div class="comment-header">
+                        <span class="comment-nickname"><%= comment.getNickname() %></span>
+                        <span class="comment-date"><%= comment.getCreated_at().toString().substring(0, 10) %></span>
+                    </div>
+                    <div class="comment-content">
+                        <%= comment.getContent() %>
+                    </div>
+                    <div class="comment-stats">
+                        <span class="stat-item">
+                            <i class="bi bi-hand-thumbs-up"></i>
+                            <%= comment.getLikes() %>
+                        </span>
+                        <span class="stat-item">
+                            <i class="bi bi-hand-thumbs-down"></i>
+                            <%= comment.getDislikes() %>
+                        </span>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+        
+        <% if(commentCount > 5) { %>
+            <div class="view-all-comments">
+                <a href="#" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-right me-1"></i>전체 댓글 보기
+                </a>
+            </div>
+        <% } %>
+    <% } %>
+</div>
+
 <!-- 메모 추가/수정 모달 -->
 <div class="modal fade" id="noteModal" tabindex="-1" aria-labelledby="noteModalLabel" aria-hidden="true">
     <div class="modal-dialog">
@@ -217,6 +337,44 @@
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
                 <button type="button" class="btn btn-primary" onclick="saveNote()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 회원 탈퇴 모달 -->
+<div class="modal fade" id="withdrawModal" tabindex="-1" aria-labelledby="withdrawModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="withdrawModalLabel">
+                    <i class="bi bi-exclamation-triangle text-danger me-2"></i>회원 탈퇴
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>주의!</strong> 회원 탈퇴 시 모든 데이터가 영구적으로 삭제됩니다.
+                </div>
+                <form id="withdrawForm">
+                    <div class="mb-3">
+                        <label for="password" class="form-label">비밀번호 확인</label>
+                        <input type="password" class="form-control" id="password" name="password" placeholder="현재 비밀번호를 입력해주세요" required>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="confirmWithdraw" required>
+                            <label class="form-check-label" for="confirmWithdraw">
+                                회원 탈퇴에 동의합니다
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-danger" onclick="withdrawAccount()">회원 탈퇴</button>
             </div>
         </div>
     </div>
@@ -289,6 +447,61 @@ function addNote(wishId) {
 }
 
 
+
+// 회원 탈퇴 모달 표시 함수
+function showWithdrawModal() {
+    const modal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+    modal.show();
+}
+
+// 회원 탈퇴 처리 함수
+function withdrawAccount() {
+    const password = document.getElementById('password').value;
+    const confirmWithdraw = document.getElementById('confirmWithdraw').checked;
+    
+    if (!password.trim()) {
+        alert('비밀번호를 입력해주세요.');
+        return;
+    }
+    
+    if (!confirmWithdraw) {
+        alert('회원 탈퇴에 동의해주세요.');
+        return;
+    }
+    
+    if (!confirm('정말로 회원 탈퇴를 진행하시겠습니까?\n모든 데이터가 영구적으로 삭제됩니다.')) {
+        return;
+    }
+    
+    // AJAX로 회원 탈퇴 요청
+    fetch('<%= root %>/mypage/withdrawAction.jsp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        },
+        body: 'password=' + encodeURIComponent(password)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result === true) {
+            alert('회원 탈퇴가 완료되었습니다.');
+            // 로그아웃 처리 후 메인 페이지로 이동
+            window.location.href = '<%= root %>/login/logout.jsp';
+        } else {
+            alert(data.message || '회원 탈퇴에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('회원 탈퇴 중 오류가 발생했습니다.');
+    });
+}
+
+// 게시글 상세보기 함수
+function viewPostDetail(postId) {
+    // 커뮤니티 페이지로 이동하여 해당 게시글 상세보기
+    window.location.href = '<%= root %>/index.jsp?main=community/cumain.jsp&post=' + postId;
+}
 
 // 메모 저장 함수
 function saveNote() {

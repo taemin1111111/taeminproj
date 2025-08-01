@@ -262,6 +262,49 @@ public class HpostDao {
         return rowNum;
     }
 
+    // 사용자별 게시글 조회 (최신순)
+    public List<HpostDto> getPostsByUserid(String userid, int limit) {
+        List<HpostDto> list = new ArrayList<>();
+        String sql = "SELECT * FROM hottalk_post WHERE userid = ? ORDER BY created_at DESC LIMIT ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            pstmt.setInt(2, limit);
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                HpostDto dto = mapDto(rs);
+                list.add(dto);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
+
+    // 사용자별 게시글 개수 조회
+    public int getPostCountByUserid(String userid) {
+        String sql = "SELECT COUNT(*) FROM hottalk_post WHERE userid = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
+
+    // 회원 탈퇴용: 사용자의 모든 게시글 삭제
+    public boolean deleteAllPostsByUserid(String userid, Connection conn) {
+        String sql = "DELETE FROM hottalk_post WHERE userid = ?";
+        try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, userid);
+            return pstmt.executeUpdate() > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
     // ResultSet -> Dto 매핑
     private HpostDto mapDto(ResultSet rs) throws SQLException {
         HpostDto dto = new HpostDto();
