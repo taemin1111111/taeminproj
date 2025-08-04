@@ -8,8 +8,7 @@
 <%@ page import="hottalk_vote.HottalkVoteDao" %>
 <%@ page import="hottalk_comment_vote.HottalkCommentVoteDao" %>
 <%@ page import="hottalk_report.Hottalk_ReportDao" %>
-<%@ page import="java.security.MessageDigest" %>
-<%@ page import="java.security.NoSuchAlgorithmException" %>
+
 
 <%
 request.setCharacterEncoding("UTF-8");
@@ -39,25 +38,8 @@ try {
         return;
     }
     
-    // 비밀번호 해시화
-    String hashedPassword = "";
-    try {
-        MessageDigest md = MessageDigest.getInstance("SHA-256");
-        byte[] hash = md.digest(password.getBytes("UTF-8"));
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : hash) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) hexString.append('0');
-            hexString.append(hex);
-        }
-        hashedPassword = hexString.toString();
-    } catch (NoSuchAlgorithmException e) {
-        out.print("{\"result\":false,\"message\":\"비밀번호 암호화 중 오류가 발생했습니다.\"}");
-        return;
-    }
-    
-    // 비밀번호 확인
-    if(!hashedPassword.equals(member.getPasswd()   ))  {
+    // 비밀번호 확인 (평문 비교)
+    if(!password.equals(member.getPasswd())) {
         out.print("{\"result\":false,\"message\":\"비밀번호가 일치하지 않습니다.\"}");
         return;
     }

@@ -78,17 +78,16 @@
             <ul class="dropdown-menu dropdown-menu-end">
                 <% if("admin".equals(provider)) { %>
                     <!-- 관리자 전용 메뉴 -->
-                    <li><a class="dropdown-item" href="<%=root%>/admin/notice.jsp">공지사항 관리</a></li>
-                    <li><a class="dropdown-item" href="<%=root%>/admin/member.jsp">회원 관리</a></li>
-                    <li><a class="dropdown-item" href="<%=root%>/admin/board.jsp">게시판 관리</a></li>
-                    <li><a class="dropdown-item" href="<%=root%>/admin/dashboard.jsp">통계/대시보드</a></li>
-                    <li><a class="dropdown-item" href="<%=root%>/admin/settings.jsp">시스템 설정</a></li>
+                    <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=admin/member.jsp">회원 관리</a></li>
+                    <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=adminpage/report.jsp">게시판 관리</a></li>
+                    <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=admin/dashboard.jsp">통계/대시보드</a></li>
+                    <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=admin/settings.jsp">시스템 설정</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="<%=root%>/login/logout.jsp">로그아웃</a></li>
                 <% } else { %>
                     <!-- 일반 사용자 메뉴 -->
                     <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=mypage/mypageMain.jsp">마이페이지</a></li>
-                    <li><a class="dropdown-item" href="<%=root%>/qna/qna.jsp">1:1 질문하기</a></li>
+                    <li><a class="dropdown-item" href="<%=root%>/index.jsp?main=qna/qna.jsp">1:1 질문하기</a></li>
                     <li><hr class="dropdown-divider"></li>
                     <li><a class="dropdown-item" href="<%=root%>/login/logout.jsp">로그아웃</a></li>
                 <% } %>

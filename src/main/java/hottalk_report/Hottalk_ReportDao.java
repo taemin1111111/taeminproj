@@ -120,4 +120,18 @@ public class Hottalk_ReportDao {
         } catch (SQLException e) { e.printStackTrace(); }
         return false;
     }
+    
+    // 신고된 게시물 ID 목록 조회 (중복 제거)
+    public List<Integer> getReportedPostIds() {
+        List<Integer> list = new ArrayList<>();
+        String sql = "SELECT DISTINCT post_id FROM hottalk_report ORDER BY post_id DESC";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            ResultSet rs = pstmt.executeQuery();
+            while (rs.next()) {
+                list.add(rs.getInt("post_id"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return list;
+    }
 }

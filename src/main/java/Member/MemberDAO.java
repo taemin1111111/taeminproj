@@ -139,4 +139,37 @@ public class MemberDAO {
         return success;
     }
 
+    // 닉네임만 업데이트
+    public boolean updateNickname(String userid, String nickname) {
+        boolean success = false;
+        String sql = "UPDATE member SET nickname = ?, update_date = NOW() WHERE userid = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nickname);
+            pstmt.setString(2, userid);
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
+    // 닉네임과 비밀번호 업데이트
+    public boolean updateProfile(String userid, String nickname, String newPassword) {
+        boolean success = false;
+        String sql = "UPDATE member SET nickname = ?, passwd = ?, update_date = NOW() WHERE userid = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setString(1, nickname);
+            pstmt.setString(2, newPassword);
+            pstmt.setString(3, userid);
+            int n = pstmt.executeUpdate();
+            if (n > 0) success = true;
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return success;
+    }
+
 }

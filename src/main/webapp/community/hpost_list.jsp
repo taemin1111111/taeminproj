@@ -12,6 +12,7 @@
     Hottalk_CommentDao commentDao = new Hottalk_CommentDao();
     SimpleDateFormat sdf = new SimpleDateFormat("MM/dd HH:mm");
     
+    
     // 페이징 처리
     int perPage = 30; // 페이지당 30개 글
     int currentPage = 1;

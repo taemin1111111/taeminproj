@@ -326,4 +326,18 @@ public class HpostDao {
         dto.setCreated_at(rs.getTimestamp("created_at"));
         return dto;
     }
+
+    // 특정 게시글의 댓글 수 조회
+    public int getCommentCountByPostId(int postId) {
+        String sql = "SELECT COUNT(*) FROM hottalk_comment WHERE post_id = ?";
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            pstmt.setInt(1, postId);
+            ResultSet rs = pstmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return 0;
+    }
 }
