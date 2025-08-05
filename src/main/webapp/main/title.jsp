@@ -44,12 +44,12 @@
 
                 <!-- 클럽 MD에게 문의하기 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<%=root%>/md/contact.jsp">클럽 MD에게 문의하기</a>
+                    <a class="nav-link" href="<%=root%>/index.jsp?main=clubmd/clubmd.jsp">클럽 MD에게 문의하기</a>
                 </li>
 
                 <!-- 테이블 예약하기 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<%=root%>/table/reserve.jsp">테이블 예약하기</a>
+                    <a class="nav-link" href="<%=root%>/index.jsp?main=clubtable/clubtable.jsp">테이블 예약하기</a>
                 </li>
 
                 <!-- 📢 공지사항 -->
