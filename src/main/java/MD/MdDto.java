@@ -4,9 +4,8 @@ import java.sql.Timestamp;
 
 public class MdDto {
     private int mdId;
+    private int placeId;  // hotplace_info.id를 참조
     private String mdName;
-    private String clubName;
-    private String region;
     private String contact;
     private String description;
     private String photo;
@@ -17,12 +16,11 @@ public class MdDto {
     public MdDto() {}
     
     // 전체 생성자
-    public MdDto(int mdId, String mdName, String clubName, String region, String contact, 
+    public MdDto(int mdId, int placeId, String mdName, String contact, 
                  String description, String photo, Timestamp createdAt, boolean isVisible) {
         this.mdId = mdId;
+        this.placeId = placeId;
         this.mdName = mdName;
-        this.clubName = clubName;
-        this.region = region;
         this.contact = contact;
         this.description = description;
         this.photo = photo;
@@ -39,28 +37,20 @@ public class MdDto {
         this.mdId = mdId;
     }
     
+    public int getPlaceId() {
+        return placeId;
+    }
+    
+    public void setPlaceId(int placeId) {
+        this.placeId = placeId;
+    }
+    
     public String getMdName() {
         return mdName;
     }
     
     public void setMdName(String mdName) {
         this.mdName = mdName;
-    }
-    
-    public String getClubName() {
-        return clubName;
-    }
-    
-    public void setClubName(String clubName) {
-        this.clubName = clubName;
-    }
-    
-    public String getRegion() {
-        return region;
-    }
-    
-    public void setRegion(String region) {
-        this.region = region;
     }
     
     public String getContact() {
@@ -107,9 +97,8 @@ public class MdDto {
     public String toString() {
         return "MdDto{" +
                 "mdId=" + mdId +
+                ", placeId=" + placeId +
                 ", mdName='" + mdName + '\'' +
-                ", clubName='" + clubName + '\'' +
-                ", region='" + region + '\'' +
                 ", contact='" + contact + '\'' +
                 ", description='" + description + '\'' +
                 ", photo='" + photo + '\'' +

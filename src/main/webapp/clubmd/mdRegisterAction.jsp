@@ -34,25 +34,31 @@
         
         // 폼 데이터 받기
         String mdName = multi.getParameter("mdName");
-        String clubName = multi.getParameter("clubName");
-        String region = multi.getParameter("region");
+        String placeIdStr = multi.getParameter("placeId");
         String contact = multi.getParameter("contact");
         String description = multi.getParameter("description");
         String photo = multi.getFilesystemName("photo");
         
         // 필수 필드 검증
         if (mdName == null || mdName.trim().isEmpty() ||
-            clubName == null || clubName.trim().isEmpty() ||
-            region == null || region.trim().isEmpty()) {
+            placeIdStr == null || placeIdStr.trim().isEmpty()) {
             response.getWriter().write("{\"success\": false, \"message\": \"필수 항목을 모두 입력해주세요.\"}");
+            return;
+        }
+        
+        // placeId를 정수로 변환
+        int placeId;
+        try {
+            placeId = Integer.parseInt(placeIdStr.trim());
+        } catch (NumberFormatException e) {
+            response.getWriter().write("{\"success\": false, \"message\": \"올바른 장소를 선택해주세요.\"}");
             return;
         }
         
         // MD DTO 생성
         MdDto mdDto = new MdDto();
         mdDto.setMdName(mdName.trim());
-        mdDto.setClubName(clubName.trim());
-        mdDto.setRegion(region.trim());
+        mdDto.setPlaceId(placeId);
         mdDto.setContact(contact != null ? contact.trim() : "");
         mdDto.setDescription(description != null ? description.trim() : "");
         mdDto.setPhoto(photo != null ? photo : "");

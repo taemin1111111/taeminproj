@@ -9,17 +9,16 @@ public class MdDao {
     
     // MD 정보 등록 (관리자만)
     public boolean insertMd(MdDto mdDto) {
-        String sql = "INSERT INTO md_info (md_name, club_name, region, contact, description, photo) " +
-                     "VALUES (?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO md_info (place_id, md_name, contact, description, photo) " +
+                     "VALUES (?, ?, ?, ?, ?)";
         
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, mdDto.getMdName());
-            pstmt.setString(2, mdDto.getClubName());
-            pstmt.setString(3, mdDto.getRegion());
-            pstmt.setString(4, mdDto.getContact());
-            pstmt.setString(5, mdDto.getDescription());
-            pstmt.setString(6, mdDto.getPhoto());
+            pstmt.setInt(1, mdDto.getPlaceId());
+            pstmt.setString(2, mdDto.getMdName());
+            pstmt.setString(3, mdDto.getContact());
+            pstmt.setString(4, mdDto.getDescription());
+            pstmt.setString(5, mdDto.getPhoto());
             
             return pstmt.executeUpdate() > 0;
             
@@ -41,9 +40,8 @@ public class MdDao {
             while (rs.next()) {
                 MdDto md = new MdDto();
                 md.setMdId(rs.getInt("md_id"));
+                md.setPlaceId(rs.getInt("place_id"));
                 md.setMdName(rs.getString("md_name"));
-                md.setClubName(rs.getString("club_name"));
-                md.setRegion(rs.getString("region"));
                 md.setContact(rs.getString("contact"));
                 md.setDescription(rs.getString("description"));
                 md.setPhoto(rs.getString("photo"));
@@ -72,9 +70,8 @@ public class MdDao {
             while (rs.next()) {
                 MdDto md = new MdDto();
                 md.setMdId(rs.getInt("md_id"));
+                md.setPlaceId(rs.getInt("place_id"));
                 md.setMdName(rs.getString("md_name"));
-                md.setClubName(rs.getString("club_name"));
-                md.setRegion(rs.getString("region"));
                 md.setContact(rs.getString("contact"));
                 md.setDescription(rs.getString("description"));
                 md.setPhoto(rs.getString("photo"));
@@ -103,9 +100,8 @@ public class MdDao {
                 if (rs.next()) {
                     MdDto md = new MdDto();
                     md.setMdId(rs.getInt("md_id"));
+                    md.setPlaceId(rs.getInt("place_id"));
                     md.setMdName(rs.getString("md_name"));
-                    md.setClubName(rs.getString("club_name"));
-                    md.setRegion(rs.getString("region"));
                     md.setContact(rs.getString("contact"));
                     md.setDescription(rs.getString("description"));
                     md.setPhoto(rs.getString("photo"));
@@ -123,22 +119,21 @@ public class MdDao {
         return null;
     }
     
-    // 클럽별 MD 정보 조회
-    public List<MdDto> getMdByClubName(String clubName) {
+    // 특정 장소의 MD 정보 조회
+    public List<MdDto> getMdByPlaceId(int placeId) {
         List<MdDto> mdList = new ArrayList<>();
-        String sql = "SELECT * FROM md_info WHERE club_name LIKE ? AND is_visible = TRUE ORDER BY created_at DESC";
+        String sql = "SELECT * FROM md_info WHERE place_id = ? AND is_visible = TRUE ORDER BY created_at DESC";
         
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, "%" + clubName + "%");
+            pstmt.setInt(1, placeId);
             
             try (ResultSet rs = pstmt.executeQuery()) {
                 while (rs.next()) {
                     MdDto md = new MdDto();
                     md.setMdId(rs.getInt("md_id"));
+                    md.setPlaceId(rs.getInt("place_id"));
                     md.setMdName(rs.getString("md_name"));
-                    md.setClubName(rs.getString("club_name"));
-                    md.setRegion(rs.getString("region"));
                     md.setContact(rs.getString("contact"));
                     md.setDescription(rs.getString("description"));
                     md.setPhoto(rs.getString("photo"));
@@ -150,40 +145,45 @@ public class MdDao {
             }
             
         } catch (SQLException e) {
-            System.out.println("클럽별 MD 정보 조회 오류: " + e.getMessage());
+            System.out.println("장소별 MD 정보 조회 오류: " + e.getMessage());
         }
         
         return mdList;
     }
     
-    // 지역별 MD 정보 조회
-    public List<MdDto> getMdByRegion(String region) {
-        List<MdDto> mdList = new ArrayList<>();
-        String sql = "SELECT * FROM md_info WHERE region LIKE ? AND is_visible = TRUE ORDER BY created_at DESC";
+    // MD 정보와 장소 정보를 함께 조회 (JOIN)
+    public List<Map<String, Object>> getMdWithPlaceInfo() {
+        List<Map<String, Object>> mdList = new ArrayList<>();
+        String sql = "SELECT m.*, h.name as place_name, h.address, h.lat, h.lng " +
+                     "FROM md_info m " +
+                     "JOIN hotplace_info h ON m.place_id = h.id " +
+                     "WHERE m.is_visible = TRUE " +
+                     "ORDER BY m.created_at DESC";
         
         try (Connection conn = db.getConnection();
-             PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, "%" + region + "%");
+             PreparedStatement pstmt = conn.prepareStatement(sql);
+             ResultSet rs = pstmt.executeQuery()) {
             
-            try (ResultSet rs = pstmt.executeQuery()) {
-                while (rs.next()) {
-                    MdDto md = new MdDto();
-                    md.setMdId(rs.getInt("md_id"));
-                    md.setMdName(rs.getString("md_name"));
-                    md.setClubName(rs.getString("club_name"));
-                    md.setRegion(rs.getString("region"));
-                    md.setContact(rs.getString("contact"));
-                    md.setDescription(rs.getString("description"));
-                    md.setPhoto(rs.getString("photo"));
-                    md.setCreatedAt(rs.getTimestamp("created_at"));
-                    md.setVisible(rs.getBoolean("is_visible"));
-                    
-                    mdList.add(md);
-                }
+            while (rs.next()) {
+                Map<String, Object> mdMap = new HashMap<>();
+                mdMap.put("mdId", rs.getInt("md_id"));
+                mdMap.put("placeId", rs.getInt("place_id"));
+                mdMap.put("mdName", rs.getString("md_name"));
+                mdMap.put("contact", rs.getString("contact"));
+                mdMap.put("description", rs.getString("description"));
+                mdMap.put("photo", rs.getString("photo"));
+                mdMap.put("createdAt", rs.getTimestamp("created_at"));
+                mdMap.put("isVisible", rs.getBoolean("is_visible"));
+                mdMap.put("placeName", rs.getString("place_name"));
+                mdMap.put("address", rs.getString("address"));
+                mdMap.put("lat", rs.getDouble("lat"));
+                mdMap.put("lng", rs.getDouble("lng"));
+                
+                mdList.add(mdMap);
             }
             
         } catch (SQLException e) {
-            System.out.println("지역별 MD 정보 조회 오류: " + e.getMessage());
+            System.out.println("MD와 장소 정보 조회 오류: " + e.getMessage());
         }
         
         return mdList;
@@ -191,19 +191,18 @@ public class MdDao {
     
     // MD 정보 수정 (관리자만)
     public boolean updateMd(MdDto mdDto) {
-        String sql = "UPDATE md_info SET md_name = ?, club_name = ?, region = ?, " +
+        String sql = "UPDATE md_info SET place_id = ?, md_name = ?, " +
                      "contact = ?, description = ?, photo = ?, is_visible = ? WHERE md_id = ?";
         
         try (Connection conn = db.getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
-            pstmt.setString(1, mdDto.getMdName());
-            pstmt.setString(2, mdDto.getClubName());
-            pstmt.setString(3, mdDto.getRegion());
-            pstmt.setString(4, mdDto.getContact());
-            pstmt.setString(5, mdDto.getDescription());
-            pstmt.setString(6, mdDto.getPhoto());
-            pstmt.setBoolean(7, mdDto.isVisible());
-            pstmt.setInt(8, mdDto.getMdId());
+            pstmt.setInt(1, mdDto.getPlaceId());
+            pstmt.setString(2, mdDto.getMdName());
+            pstmt.setString(3, mdDto.getContact());
+            pstmt.setString(4, mdDto.getDescription());
+            pstmt.setString(5, mdDto.getPhoto());
+            pstmt.setBoolean(6, mdDto.isVisible());
+            pstmt.setInt(7, mdDto.getMdId());
             
             return pstmt.executeUpdate() > 0;
             
