@@ -41,6 +41,8 @@
 <link rel="stylesheet" href="<%=root%>/css/community.css">
 <!-- 마이페이지 -->
 <link rel="stylesheet" href="<%=root%>/css/mypage.css">
+<!-- MD 페이지 -->
+<link rel="stylesheet" href="<%=root%>/css/md.css">
 </head>
 <body>
 

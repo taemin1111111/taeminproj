@@ -2,6 +2,7 @@
 <%@ page import="java.util.*" %>
 <%@ page import="MD.MdDao" %>
 <%@ page import="MD.MdDto" %>
+<%@ page import="MD.MdWishDao" %>
 <%@ page import="hotplace_info.HotplaceDao" %>
 <%@ page import="hotplace_info.HotplaceDto" %>
 <%
@@ -10,10 +11,25 @@
     String nickname = (String)session.getAttribute("nickname");
     String provider = (String)session.getAttribute("provider");
     
-    // MD 정보와 장소 정보를 함께 조회
+    // 페이징 파라미터 처리
+    String pageParam = request.getParameter("page");
+    int currentPage = 1;
+    int pageSize = 10; // 페이지당 10개
+    
+    if (pageParam != null && !pageParam.isEmpty()) {
+        try {
+            currentPage = Integer.parseInt(pageParam);
+            if (currentPage < 1) currentPage = 1;
+        } catch (NumberFormatException e) {
+            currentPage = 1;
+        }
+    }
+    
+    // MD 정보와 장소 정보를 함께 조회 (페이징 적용)
     MdDao mdDao = new MdDao();
-    List<Map<String, Object>> mdList = mdDao.getMdWithPlaceInfo();
+    List<Map<String, Object>> mdList = mdDao.getMdWithPlaceInfoPaged(currentPage, pageSize);
     int mdCount = mdDao.getMdCount();
+    int totalPages = mdDao.getTotalPages(pageSize);
     
     // 장소 목록 조회 (자동완성용)
     HotplaceDao hotplaceDao = new HotplaceDao();
@@ -40,73 +56,207 @@ var hotplaceList = [
 
 </script>
 
-<div class="container">
-    <div class="card-box">
-        <div class="section-title">
-            <i class="bi bi-chat-dots"></i>
-            클럽 MD 예약 창
+<div class="md-container">
+    <!-- 헤더 섹션 -->
+    <div class="md-header">
+        <div class="md-header-content">
+            <h1 class="md-title">
+                <i class="bi bi-shield-check me-3"></i>
+                클럽 MD 예약 창
+            </h1>
+            <p class="md-subtitle">검증된 MD들과 안전하게 예약하세요</p>
+            <span class="md-badge">
+                <i class="bi bi-verified me-2"></i>검증된 MD
+            </span>
         </div>
+    </div>
+    
+    <!-- 신뢰도 표시 섹션 -->
+    <div class="md-trust-section">
+        <div class="md-trust-grid">
+            <div class="md-trust-item">
+                <div class="md-trust-icon">
+                    <i class="bi bi-shield-check"></i>
+                </div>
+                <div class="md-trust-title">검증된 MD</div>
+                <div class="md-trust-desc">모든 MD는 신원이 확인된 검증된 MD입니다</div>
+            </div>
+            <div class="md-trust-item">
+                <div class="md-trust-icon">
+                    <i class="bi bi-lock"></i>
+                </div>
+                <div class="md-trust-title">안전한 예약</div>
+                <div class="md-trust-desc">개인정보 보호 및 안전한 예약 시스템</div>
+            </div>
+            <div class="md-trust-item">
+                <div class="md-trust-icon">
+                    <i class="bi bi-star"></i>
+                </div>
+                <div class="md-trust-title">고객 만족</div>
+                <div class="md-trust-desc">높은 고객 만족도와 신뢰받는 서비스</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MD 카드 섹션 -->
+    <div class="md-cards-section">
         
         <!-- 관리자만 MD 등록 버튼 표시 -->
         <% if("admin".equals(provider)) { %>
             <div class="text-end mb-3">
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#mdRegisterModal">
-                    <i class="bi bi-plus-circle"></i> MD 등록
+                <button type="button" class="md-admin-btn" data-bs-toggle="modal" data-bs-target="#mdRegisterModal">
+                    <i class="bi bi-plus-circle me-2"></i> MD 등록
                 </button>
             </div>
         <% } %>
         
         <!-- MD 정보 출력 -->
         <% if(mdCount > 0) { %>
-            <div class="row">
+            <div class="md-cards-grid">
                 <% for(Map<String, Object> md : mdList) { %>
-                    <div class="col-md-6 col-lg-4 mb-4">
-                        <div class="card h-100">
+                    <div class="md-card">
+                        <!-- 검증 배지 -->
+                        <div class="md-verified-badge">
+                            <i class="bi bi-shield-check me-1"></i>검증됨
+                        </div>
+                        
+                        <!-- 찜 버튼 (우상단) -->
+                        <% if(loginId != null) { %>
+                            <% 
+                            MdWishDao wishDao = new MdWishDao();
+                            boolean isWished = wishDao.isMdWished((Integer)md.get("mdId"), loginId);
+                            %>
+                            <button type="button" 
+                                    class="md-wish-btn <%= isWished ? "wished" : "" %>"
+                                    onclick="toggleMdWish(<%= md.get("mdId") != null ? md.get("mdId") : 0 %>, this)"
+                                    data-md-id="<%= md.get("mdId") != null ? md.get("mdId") : 0 %>"
+                                    data-wished="<%= isWished %>">
+                                <i class="bi <%= isWished ? "bi-heart-fill" : "bi-heart" %>"></i>
+                            </button>
+                        <% } %>
+                        
+                        <div class="md-card-header">
                             <% if(md.get("photo") != null && !md.get("photo").toString().isEmpty()) { %>
-                                <img src="<%= root %>/mdphotos/<%= md.get("photo") %>" class="card-img-top" alt="MD 사진" style="height: 200px; object-fit: cover;">
+                                <img src="<%= root %>/mdphotos/<%= md.get("photo") %>" class="md-card-image" alt="MD 사진">
                             <% } else { %>
-                                <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
-                                    <i class="bi bi-person-circle" style="font-size: 4rem; color: #ccc;"></i>
+                                <div class="md-card-placeholder">
+                                    <i class="bi bi-person-circle"></i>
                                 </div>
                             <% } %>
-                            <div class="card-body">
-                                <h5 class="card-title"><%= md.get("mdName") %></h5>
-                                <p class="card-text">
-                                    <i class="bi bi-geo-alt"></i> <%= md.get("placeName") %>
-                                </p>
-                                <p class="card-text text-muted">
-                                    <small><%= md.get("address") %></small>
-                                </p>
-                                <% if(md.get("contact") != null && !md.get("contact").toString().isEmpty()) { %>
-                                    <p class="card-text">
-                                        <i class="bi bi-telephone"></i> <%= md.get("contact") %>
-                                    </p>
-                                <% } %>
-                                <% if(md.get("description") != null && !md.get("description").toString().isEmpty()) { %>
-                                    <p class="card-text"><%= md.get("description") %></p>
-                                <% } %>
+                        </div>
+                        
+                        <div class="md-card-body">
+                            <h5 class="md-card-name"><%= md.get("mdName") %></h5>
+                            <div class="md-card-location">
+                                <i class="bi bi-geo-alt"></i>
+                                <span class="md-card-place"><%= md.get("placeName") %></span>
                             </div>
-                            <div class="card-footer text-muted">
-                                <small>등록일: <%= md.get("createdAt") != null ? md.get("createdAt").toString().substring(0, 10) : "" %></small>
+                            <div class="md-card-address">
+                                <i class="bi bi-geo-alt-fill"></i>
+                                <span class="address-text"><%= md.get("address") %></span>
                             </div>
+                            <% if(md.get("contact") != null && !md.get("contact").toString().isEmpty()) { %>
+                                <div class="md-card-contact">
+                                    <i class="bi bi-telephone"></i>
+                                    <span class="md-card-contact-text"><%= md.get("contact") %></span>
+                                </div>
+                            <% } %>
+                            <% if(md.get("description") != null && !md.get("description").toString().isEmpty()) { %>
+                                <div class="md-card-description">
+                                    <span class="description-text">연결주소: <%= md.get("description") %></span>
+                                </div>
+                            <% } %>
                         </div>
                     </div>
                 <% } %>
             </div>
+            
+            <!-- 페이징 네비게이션 -->
+            <% if(totalPages > 1) { %>
+                <nav class="md-pagination">
+                    <ul class="pagination">
+                        <!-- 이전 페이지 -->
+                        <% if(currentPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp&page=<%= currentPage - 1 %>" aria-label="이전">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&laquo;</span>
+                            </li>
+                        <% } %>
+                        
+                        <!-- 페이지 번호 -->
+                        <% 
+                        int startPage = Math.max(1, currentPage - 2);
+                        int endPage = Math.min(totalPages, currentPage + 2);
+                        
+                        if(startPage > 1) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp&page=1">1</a>
+                            </li>
+                            <% if(startPage > 2) { %>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <% } %>
+                        <% } %>
+                        
+                        <% for(int i = startPage; i <= endPage; i++) { %>
+                            <li class="page-item <%= i == currentPage ? "active" : "" %>">
+                                <a class="page-link" href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp&page=<%= i %>"><%= i %></a>
+                            </li>
+                        <% } %>
+                        
+                        <% if(endPage < totalPages) { %>
+                            <% if(endPage < totalPages - 1) { %>
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            <% } %>
+                            <li class="page-item">
+                                <a class="page-link" href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp&page=<%= totalPages %>"><%= totalPages %></a>
+                            </li>
+                        <% } %>
+                        
+                        <!-- 다음 페이지 -->
+                        <% if(currentPage < totalPages) { %>
+                            <li class="page-item">
+                                <a class="page-link" href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp&page=<%= currentPage + 1 %>" aria-label="다음">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        <% } else { %>
+                            <li class="page-item disabled">
+                                <span class="page-link" aria-hidden="true">&raquo;</span>
+                            </li>
+                        <% } %>
+                    </ul>
+                </nav>
+                
+                <!-- 페이지 정보 표시 -->
+                <div class="text-center text-muted mt-2">
+                    <small>총 <%= mdCount %>개의 MD 중 <%= (currentPage - 1) * pageSize + 1 %>-<%= Math.min(currentPage * pageSize, mdCount) %>번째</small>
+                </div>
+            <% } %>
         <% } else { %>
             <!-- MD가 없을 때 메시지 -->
-            <div class="text-center py-5">
-                <i class="bi bi-exclamation-triangle text-warning" style="font-size: 3rem;"></i>
-                <h4 class="mt-3">등록된 MD가 없습니다</h4>
-                <p class="text-muted">현재 등록된 MD가 없습니다.</p>
-                <p class="text-muted">관리자에게 연락해서 MD 등록을 해주세요!</p>
+            <div class="md-empty-state">
+                <div class="md-empty-icon">
+                    <i class="bi bi-exclamation-triangle"></i>
+                </div>
+                <h4 class="md-empty-title">등록된 MD가 없습니다</h4>
+                <p class="md-empty-description">현재 등록된 MD가 없습니다.</p>
+                <p class="md-empty-description">관리자에게 연락해서 MD 등록을 해주세요!</p>
             </div>
         <% } %>
     </div>
 </div>
 
 <!-- MD 등록 모달 -->
-<div class="modal fade" id="mdRegisterModal" tabindex="-1" aria-labelledby="mdRegisterModalLabel" aria-hidden="true">
+<div class="modal fade md-modal" id="mdRegisterModal" tabindex="-1" aria-labelledby="mdRegisterModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -288,6 +438,55 @@ function registerMd() {
     .catch(error => {
         console.error('Error:', error);
         alert('MD 등록 중 오류가 발생했습니다.');
+    });
+}
+
+// MD 찜 토글 함수
+function toggleMdWish(mdId, button) {
+    const isWished = button.getAttribute('data-wished') === 'true';
+    const action = isWished ? 'remove' : 'add';
+    
+    // 버튼 비활성화 (중복 클릭 방지)
+    button.disabled = true;
+    
+    // AJAX 요청
+    const formData = new URLSearchParams();
+    formData.append('action', action);
+    formData.append('mdId', mdId);
+    
+    fetch('<%= root %>/clubmd/mdWishAction.jsp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 찜 상태 토글
+            const newWished = !isWished;
+            button.setAttribute('data-wished', newWished);
+            
+            // 아이콘 변경
+            const icon = button.querySelector('i');
+            if (newWished) {
+                icon.className = 'bi bi-heart-fill text-danger';
+            } else {
+                icon.className = 'bi bi-heart text-muted';
+            }
+            
+            // 버튼 활성화
+            button.disabled = false;
+        } else {
+            alert(data.message);
+            button.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('찜 처리 중 오류가 발생했습니다.');
+        button.disabled = false;
     });
 }
 </script>

@@ -282,4 +282,54 @@ public class MdDao {
         
         return 0;
     }
+    
+    // 페이징을 위한 MD 정보와 장소 정보를 함께 조회 (JOIN)
+    public List<Map<String, Object>> getMdWithPlaceInfoPaged(int page, int pageSize) {
+        List<Map<String, Object>> mdList = new ArrayList<>();
+        String sql = "SELECT m.*, h.name as place_name, h.address, h.lat, h.lng " +
+                     "FROM md_info m " +
+                     "JOIN hotplace_info h ON m.place_id = h.id " +
+                     "WHERE m.is_visible = TRUE " +
+                     "ORDER BY m.created_at DESC " +
+                     "LIMIT ? OFFSET ?";
+        
+        try (Connection conn = db.getConnection();
+             PreparedStatement pstmt = conn.prepareStatement(sql)) {
+            
+            int offset = (page - 1) * pageSize;
+            pstmt.setInt(1, pageSize);
+            pstmt.setInt(2, offset);
+            
+            try (ResultSet rs = pstmt.executeQuery()) {
+                while (rs.next()) {
+                    Map<String, Object> mdMap = new HashMap<>();
+                    mdMap.put("mdId", rs.getInt("md_id"));
+                    mdMap.put("placeId", rs.getInt("place_id"));
+                    mdMap.put("mdName", rs.getString("md_name"));
+                    mdMap.put("contact", rs.getString("contact"));
+                    mdMap.put("description", rs.getString("description"));
+                    mdMap.put("photo", rs.getString("photo"));
+                    mdMap.put("createdAt", rs.getTimestamp("created_at"));
+                    mdMap.put("isVisible", rs.getBoolean("is_visible"));
+                    mdMap.put("placeName", rs.getString("place_name"));
+                    mdMap.put("address", rs.getString("address"));
+                    mdMap.put("lat", rs.getDouble("lat"));
+                    mdMap.put("lng", rs.getDouble("lng"));
+                    
+                    mdList.add(mdMap);
+                }
+            }
+            
+        } catch (SQLException e) {
+            System.out.println("페이징 MD와 장소 정보 조회 오류: " + e.getMessage());
+        }
+        
+        return mdList;
+    }
+    
+    // 총 페이지 수 계산
+    public int getTotalPages(int pageSize) {
+        int totalCount = getMdCount();
+        return (int) Math.ceil((double) totalCount / pageSize);
+    }
 } 

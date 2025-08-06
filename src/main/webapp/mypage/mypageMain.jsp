@@ -8,6 +8,7 @@
 <%@ page import="hpost.HpostDto" %>
 <%@ page import="hottalk_comment.Hottalk_CommentDao" %>
 <%@ page import="hottalk_comment.Hottalk_CommentDto" %>
+<%@ page import="MD.MdWishDao" %>
 <%
     String root = request.getContextPath();
     String loginId = (String)session.getAttribute("loginid");
@@ -41,6 +42,11 @@
     Hottalk_CommentDao commentDao = new Hottalk_CommentDao();
     List<Hottalk_CommentDto> myComments = commentDao.getCommentsByUserid(loginId, 5); // 최근 5개
     int commentCount = commentDao.getCommentCountByUserid(loginId);
+    
+    // 내가 찜한 MD 정보 가져오기
+    MdWishDao mdWishDao = new MdWishDao();
+    List<Map<String, Object>> myMdWishes = mdWishDao.getUserMdWishesWithInfo(loginId, 5); // 최근 5개
+    int mdWishCount = mdWishDao.getUserMdWishCount(loginId);
 %>
 
 <div class="mypage-container">
@@ -209,6 +215,87 @@
             </a>
         </div>
     </div>
+</div>
+
+<!-- 내가 찜한 MD 섹션 -->
+<div class="md-wishlist-section">
+    <div class="section-header">
+        <h3 class="section-title">
+            <i class="bi bi-chat-dots me-2"></i>
+            내가 찜한 MD 리스트
+        </h3>
+        <span class="section-count">총 <strong><%= mdWishCount %></strong>개의 MD</span>
+    </div>
+    
+    <% if(myMdWishes.isEmpty()) { %>
+        <div class="empty-md-wishlist">
+            <div class="empty-icon">
+                <i class="bi bi-heart"></i>
+            </div>
+            <p class="empty-text">아직 찜한 MD가 없어요</p>
+            <a href="<%= root %>/index.jsp?main=clubmd/clubmd.jsp" class="btn btn-outline-primary">
+                <i class="bi bi-search me-1"></i>MD 둘러보기
+            </a>
+        </div>
+    <% } else { %>
+        <div class="md-wishlist-grid">
+            <% for(Map<String, Object> mdWish : myMdWishes) { %>
+                <div class="md-wishlist-card">
+                    <div class="md-wishlist-card-header">
+                        <div class="md-wishlist-category">
+                            <span class="category-badge category-md">MD</span>
+                        </div>
+                        <button class="md-wishlist-delete-btn" onclick="deleteMdWish(<%= mdWish.get("mdId") %>)">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <div class="md-wishlist-card-body">
+                        <% if(mdWish.get("photo") != null && !mdWish.get("photo").toString().isEmpty()) { %>
+                            <div class="md-photo">
+                                <img src="<%= root %>/mdphotos/<%= mdWish.get("photo") %>" alt="MD 사진" class="md-photo-img">
+                            </div>
+                        <% } else { %>
+                            <div class="md-photo-placeholder">
+                                <i class="bi bi-person-circle"></i>
+                            </div>
+                        <% } %>
+                        <h5 class="md-name"><%= mdWish.get("mdName") %></h5>
+                        <p class="md-place">
+                            <i class="bi bi-geo-alt me-1"></i>
+                            <%= mdWish.get("placeName") %>
+                        </p>
+                        <p class="md-address">
+                            <small class="text-muted"><%= mdWish.get("address") %></small>
+                        </p>
+                        <% if(mdWish.get("contact") != null && !mdWish.get("contact").toString().isEmpty()) { %>
+                            <p class="md-contact">
+                                <i class="bi bi-telephone me-1"></i>
+                                <%= mdWish.get("contact") %>
+                            </p>
+                        <% } %>
+                        <% if(mdWish.get("description") != null && !mdWish.get("description").toString().isEmpty()) { %>
+                            <p class="md-description">
+                                <small><%= mdWish.get("description") %></small>
+                            </p>
+                        <% } %>
+                        <div class="md-wish-date">
+                            <i class="bi bi-calendar3 me-1"></i>
+                            찜한 날짜: <%= mdWish.get("createdAt").toString().substring(0, 10) %>
+                        </div>
+                    </div>
+
+                </div>
+            <% } %>
+        </div>
+        
+        <% if(mdWishCount > 0) { %>
+            <div class="view-all-md-wishes">
+                <a href="<%= root %>/index.jsp?main=mypage/mymdlist.jsp" class="btn btn-outline-secondary btn-sm">
+                    <i class="bi bi-arrow-right me-1"></i>전체 찜MD 보기
+                </a>
+            </div>
+        <% } %>
+    <% } %>
 </div>
 
 <!-- 내가 쓴 게시글 섹션 -->
@@ -953,6 +1040,53 @@ function saveNote() {
         alert('메모 저장 중 오류가 발생했습니다.');
     });
 }
+
+// MD 찜 삭제 함수
+function deleteMdWish(mdId) {
+    if (!confirm('정말로 이 MD를 찜 목록에서 삭제하시겠습니까?')) {
+        return;
+    }
+    
+    // AJAX로 MD 찜 삭제
+    fetch('<%= root %>/clubmd/mdWishAction.jsp', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: 'action=remove&mdId=' + mdId
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // 삭제된 카드 제거
+            const card = event.target.closest('.md-wishlist-card');
+            if (card) {
+                card.remove();
+            }
+            
+            // MD 찜 개수 업데이트
+            const countElement = document.querySelector('.md-wishlist-section .section-count strong');
+            if (countElement) {
+                const currentCount = parseInt(countElement.textContent);
+                countElement.textContent = (currentCount - 1);
+            }
+            
+            // MD 찜 목록이 비어있으면 빈 상태 표시
+            const mdWishlistGrid = document.querySelector('.md-wishlist-grid');
+            if (mdWishlistGrid && mdWishlistGrid.children.length === 0) {
+                location.reload(); // 페이지 새로고침으로 빈 상태 표시
+            }
+        } else {
+            alert(data.message || 'MD 찜 삭제에 실패했습니다.');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('MD 찜 삭제 중 오류가 발생했습니다.');
+    });
+}
+
+
 </script>
 
 <link rel="stylesheet" href="<%=root%>/css/mypage.css">
