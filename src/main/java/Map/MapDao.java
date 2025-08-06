@@ -218,4 +218,35 @@ public class MapDao {
         }
         return list;
     }
+
+    // ✅ 모든 동/구의 평균 평점 조회
+    public Map<String, Double> getRegionAverageRatings() {
+        Map<String, Double> ratings = new HashMap<>();
+        String sql = "SELECT p.dong, IFNULL(ROUND(AVG(r.stars), 1), 0.0) as avg_rating " +
+                     "FROM place_info p " +
+                     "LEFT JOIN review r ON p.dong = r.hg_id " +
+                     "GROUP BY p.dong";
+        
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        ResultSet rs = null;
+        
+        try {
+            conn = db.getConnection();
+            pstmt = conn.prepareStatement(sql);
+            rs = pstmt.executeQuery();
+            
+            while (rs.next()) {
+                String dong = rs.getString("dong");
+                double rating = rs.getDouble("avg_rating");
+                ratings.put(dong, rating);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            db.dbClose(rs, pstmt, conn);
+        }
+        
+        return ratings;
+    }
 }
