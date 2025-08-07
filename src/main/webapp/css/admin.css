@@ -1,13 +1,15 @@
 @charset "UTF-8";
 
 /* 관리자 페이지 전용 컨테이너 */
-.admin-container {
+.report-admin-container {
     max-width: 800px;
     margin: 0 auto;
     padding: 20px;
+    background: #1a1a1a;
+    min-height: 100vh;
 }
 
-.admin-header {
+.report-admin-header {
     background: white;
     border-radius: 16px;
     padding: 24px;
@@ -15,69 +17,69 @@
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
 }
 
-.admin-header h1 {
+.report-admin-header h1 {
     color: #1a1a1a;
     font-size: 24px;
     font-weight: 600;
     margin: 0;
 }
 
-.post-card {
+.report-admin-post-card {
     background: white;
     border-radius: 16px;
     padding: 20px;
     margin-bottom: 16px;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    transition: all 0.2s ease;
-}
-
-.post-card:hover {
-    box-shadow: 0 4px 16px rgba(0,0,0,0.1);
-}
-
-.post-header {
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 16px;
 }
 
-.post-info {
+.report-admin-post-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
     flex: 1;
 }
 
-.post-title {
-    font-size: 18px;
+.report-admin-user-info {
     font-weight: 600;
     color: #1a1a1a;
-    margin-bottom: 8px;
-    line-height: 1.4;
+    min-width: 120px;
 }
 
-.post-meta {
-    display: flex;
-    gap: 16px;
-    font-size: 14px;
+.report-admin-timestamp {
     color: #666;
-}
-
-.post-stats {
-    display: flex;
-    gap: 16px;
     font-size: 14px;
-    color: #666;
+    min-width: 180px;
 }
 
-.report-count {
+.report-admin-stats {
+    display: flex;
+    gap: 15px;
+    color: #666;
+    font-size: 14px;
+}
+
+.report-admin-report-count {
     background: #ff6b6b;
     color: white;
-    padding: 4px 8px;
+    padding: 4px 12px;
     border-radius: 12px;
     font-size: 12px;
     font-weight: 600;
+    margin-left: 15px;
 }
 
-.toggle-btn {
+.report-admin-red-bar {
+    width: 4px;
+    height: 20px;
+    background: #ff6b6b;
+    border-radius: 2px;
+    margin-left: 10px;
+}
+
+.report-admin-toggle-btn {
     background: none;
     border: none;
     color: #666;
@@ -85,57 +87,75 @@
     padding: 8px;
     border-radius: 8px;
     transition: all 0.2s ease;
+    margin-left: 10px;
+    font-size: 14px;
 }
 
-.toggle-btn:hover {
+.report-admin-toggle-btn:hover {
     background: #f8f9fa;
     color: #1a1a1a;
 }
 
-.report-details {
+.report-admin-btn-delete-inline {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    cursor: pointer;
+    margin-left: 10px;
+    transition: all 0.2s ease;
+}
+
+.report-admin-btn-delete-inline:hover {
+    background: #c82333;
+}
+
+.report-admin-report-details {
     display: none;
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid #eee;
 }
 
-.report-item {
+.report-admin-report-item {
     background: #f8f9fa;
     border-radius: 12px;
     padding: 16px;
     margin-bottom: 12px;
 }
 
-.report-header {
+.report-admin-report-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 8px;
 }
 
-.report-reason {
+.report-admin-report-reason {
     font-weight: 600;
     color: #1a1a1a;
 }
 
-.report-time {
+.report-admin-report-time {
     font-size: 12px;
     color: #999;
 }
 
-.report-content {
+.report-admin-report-content {
     color: #666;
     font-size: 14px;
     line-height: 1.5;
 }
 
-.action-buttons {
+.report-admin-action-buttons {
     display: flex;
     gap: 8px;
     margin-top: 16px;
 }
 
-.btn-view {
+.report-admin-btn-view {
     background: #007bff;
     color: white;
     border: none;
@@ -146,13 +166,13 @@
     transition: all 0.2s ease;
 }
 
-.btn-view:hover {
+.report-admin-btn-view:hover {
     background: #0056b3;
     color: white;
     text-decoration: none;
 }
 
-.btn-delete {
+.report-admin-btn-delete {
     background: #dc3545;
     color: white;
     border: none;
@@ -162,32 +182,19 @@
     transition: all 0.2s ease;
 }
 
-.btn-delete:hover {
+.report-admin-btn-delete:hover {
     background: #c82333;
 }
 
-.btn-delete-inline {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    transition: all 0.2s ease;
-    margin-left: 8px;
-}
-
-.btn-delete-inline:hover {
-    background: #c82333;
-}
-
-.empty-state {
+.report-admin-empty-state {
     text-align: center;
     padding: 60px 20px;
     color: #666;
+    background: white;
+    border-radius: 16px;
 }
 
-.empty-state i {
+.report-admin-empty-state i {
     font-size: 48px;
     color: #ddd;
     margin-bottom: 16px;

@@ -35,13 +35,13 @@
 <!-- 관리자 페이지 스타일시트 추가 -->
 <link href="<%= root %>/css/admin.css" rel="stylesheet">
 
-<div class="admin-container">
-    <div class="admin-header">
+<div class="report-admin-container">
+    <div class="report-admin-header">
         <h1><i class="fas fa-flag"></i> 신고된 게시물 관리</h1>
     </div>
     
     <% if(reportedPosts.isEmpty()) { %>
-        <div class="empty-state">
+        <div class="report-admin-empty-state">
             <i class="fas fa-inbox"></i>
             <h3>신고된 게시물이 없습니다</h3>
             <p>현재 신고된 게시물이 없습니다.</p>
@@ -52,72 +52,39 @@
             int reportCount = reportDao.getReportCountByPostId(post.getId());
             List<Hottalk_ReportDto> reports = reportDao.getReportsByPostId(post.getId());
         %>
-            <div class="post-card">
-                <div class="post-header">
-                    <div class="post-info">
-                        <div class="post-title"><%= post.getTitle() %></div>
-                        <div class="post-meta">
-                            <span><i class="fas fa-user"></i> <%= post.getUserid() %></span>
-                            <span><i class="fas fa-calendar"></i> <%= post.getCreated_at() %></span>
-                            <span><i class="fas fa-eye"></i> <%= post.getViews() %></span>
-                        </div>
-                        <div class="post-stats">
-                            <span><i class="fas fa-thumbs-up"></i> <%= post.getLikes() %></span>
-                            <span><i class="fas fa-thumbs-down"></i> <%= post.getDislikes() %></span>
-                            <span class="report-count"><i class="fas fa-flag"></i> <%= reportCount %>건 신고</span>
-                            <button class="btn-delete-inline" onclick="deletePost(<%= post.getId() %>)" title="게시글 삭제">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
+            <div class="report-admin-post-card">
+                <div class="report-admin-post-info">
+                    <div class="report-admin-user-info">
+                        <% if(post.getUserid().equals("admin")) { %>
+                            WW <%= post.getUserid() %>
+                        <% } else if(post.getUserid().length() > 20) { %>
+                            WWW <%= post.getUserid() %>
+                        <% } else { %>
+                            WW <%= post.getUserid() %>
+                        <% } %>
                     </div>
-                    <button class="toggle-btn" onclick="toggleReports(<%= i %>)">
-                        <i class="fas fa-chevron-down" id="icon-<%= i %>"></i>
-                    </button>
-                </div>
-                
-                <div class="report-details" id="reports-<%= i %>">
-                    <h6 style="margin-bottom: 12px; color: #666;">신고 내역</h6>
-                    <% for(Hottalk_ReportDto report : reports) { %>
-                        <div class="report-item">
-                            <div class="report-header">
-                                <span class="report-reason"><%= report.getReason() %></span>
-                                <span class="report-time"><%= report.getReport_time() %></span>
-                            </div>
-                            <div class="report-content">
-                                <%= report.getContent() != null ? report.getContent() : "내용 없음" %>
-                            </div>
-                            <div style="font-size: 12px; color: #999; margin-top: 8px;">
-                                신고자: <%= report.getUser_id() %>
-                            </div>
-                        </div>
-                    <% } %>
-                    
-                    <div class="action-buttons">
-                        <a href="<%= root %>/index.jsp?main=community/hpost_detail.jsp?id=<%= post.getId() %>" 
-                           class="btn-view" target="_blank">
-                            <i class="fas fa-external-link-alt"></i> 게시글 보기
-                        </a>
+                    <div class="report-admin-timestamp">
+                        <%= post.getCreated_at() %>
                     </div>
+                    <div class="report-admin-stats">
+                        <span><%= post.getViews() %></span>
+                        <span><%= post.getLikes() %></span>
+                        <span><%= post.getDislikes() %></span>
+                    </div>
+                    <div class="report-admin-report-count">
+                        <%= reportCount %>건 신고
+                    </div>
+                    <div class="report-admin-red-bar"></div>
                 </div>
+                <button class="report-admin-btn-delete-inline" onclick="deletePost(<%= post.getId() %>)" title="게시글 삭제">
+                    <i class="fas fa-trash"></i>
+                </button>
             </div>
         <% } %>
     <% } %>
 </div>
 
 <script>
-    function toggleReports(index) {
-        const details = document.getElementById('reports-' + index);
-        const icon = document.getElementById('icon-' + index);
-        
-        if (details.style.display === 'none' || details.style.display === '') {
-            details.style.display = 'block';
-            icon.className = 'fas fa-chevron-up';
-        } else {
-            details.style.display = 'none';
-            icon.className = 'fas fa-chevron-down';
-        }
-    }
-    
     function deletePost(postId) {
         if (confirm('정말로 이 게시글을 삭제하시겠습니까?')) {
             fetch('<%= root %>/adminpage/deletePostAction.jsp', {
