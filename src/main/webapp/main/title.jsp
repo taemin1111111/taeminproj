@@ -54,7 +54,7 @@
 
                 <!-- 📢 공지사항 -->
                 <li class="nav-item">
-                    <a class="nav-link" href="<%=root%>/notice/list.jsp">공지사항</a>
+                    <a class="nav-link" href="<%=root%>/index.jsp?main=notice/noticemain.jsp">공지사항</a>
                 </li>
             </ul>
         </nav>

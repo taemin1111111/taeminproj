@@ -1,15 +1,17 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*, hotplace_info.*, Map.MapDao" %>
+<%@ page import="java.util.*, hotplace_info.*, Map.MapDao, ClubGenre.*" %>
 <%
     String root = request.getContextPath();
     HotplaceDao hotplaceDao = new HotplaceDao();
     MapDao mapDao = new MapDao();
+    ClubGenreDao clubGenreDao = new ClubGenreDao();
     List<HotplaceDto> hotplaceList = hotplaceDao.getAllHotplaces();
     List<Map<String, Object>> sigunguCenterList = mapDao.getAllSigunguCenters();
     List<Map<String, Object>> sigunguCategoryCountList = mapDao.getSigunguCategoryCounts();
     List<Map<String, Object>> regionCenters = mapDao.getAllRegionCenters();
     List<Map<String, Object>> regionCategoryCounts = mapDao.getRegionCategoryCounts();
     String loginId = (String)session.getAttribute("loginid");
+    String provider = (String)session.getAttribute("provider");
     System.out.println("loginId in session: " + loginId); 
     List<String> regionNameList = mapDao.getAllRegionNames();
     List<String> hotplaceNameList = hotplaceDao.getAllHotplaceNames();
@@ -20,6 +22,7 @@
 <script>
   var isLoggedIn = <%= (loginId != null) ? "true" : "false" %>;
   var loginUserId = '<%= (loginId != null ? loginId : "") %>';
+  var isAdmin = <%= (provider != null && "admin".equals(provider)) ? "true" : "false" %>;
   var regionNameList = [<% for(int i=0;i<regionNameList.size();i++){ %>'<%=regionNameList.get(i).replace("'", "\\'")%>'<% if(i<regionNameList.size()-1){%>,<%}}%>];
   var hotplaceNameList = [<% for(int i=0;i<hotplaceNameList.size();i++){ %>'<%=hotplaceNameList.get(i).replace("'", "\\'")%>'<% if(i<hotplaceNameList.size()-1){%>,<%}}%>];
   
@@ -143,7 +146,19 @@
 
 <script>
   // JSP 변수들을 JavaScript로 전달
-  var hotplaces = [<% for (int i = 0; i < hotplaceList.size(); i++) { HotplaceDto dto = hotplaceList.get(i); %>{id:<%=dto.getId()%>, name:'<%=dto.getName()%>', categoryId:<%=dto.getCategoryId()%>, address:'<%=dto.getAddress()%>', lat:<%=dto.getLat()%>, lng:<%=dto.getLng()%>, regionId:<%=dto.getRegionId()%>}<% if (i < hotplaceList.size() - 1) { %>,<% } %><% } %>];
+  var hotplaces = [<% for (int i = 0; i < hotplaceList.size(); i++) { HotplaceDto dto = hotplaceList.get(i); 
+    // 클럽인 경우 장르 정보 가져오기
+    String genres = "";
+    if (dto.getCategoryId() == 1) {
+      List<ClubGenreDto> genreList = clubGenreDao.getGenresByPlaceId(dto.getId());
+      if (genreList != null && !genreList.isEmpty()) {
+        genres = genreList.stream()
+          .map(genre -> genre.getGenreName())
+          .reduce((a, b) -> a + ", " + b)
+          .orElse("");
+      }
+    }
+  %>{id:<%=dto.getId()%>, name:'<%=dto.getName()%>', categoryId:<%=dto.getCategoryId()%>, address:'<%=dto.getAddress()%>', lat:<%=dto.getLat()%>, lng:<%=dto.getLng()%>, regionId:<%=dto.getRegionId()%>, genres:'<%=genres%>'}<% if (i < hotplaceList.size() - 1) { %>,<% } %><% } %>];
   var rootPath = '<%=root%>';
   // 시군구 중심좌표
   var sigunguCenters = [<% for (int i = 0; i < sigunguCenterList.size(); i++) { Map<String, Object> row = sigunguCenterList.get(i); %>{sido:'<%=row.get("sido")%>', sigungu:'<%=row.get("sigungu")%>', lat:<%=row.get("lat")%>, lng:<%=row.get("lng")%>}<% if (i < sigunguCenterList.size() - 1) { %>,<% } %><% } %>];
@@ -210,12 +225,14 @@
     var marker = new kakao.maps.Marker({ map: null, position: new kakao.maps.LatLng(place.lat, place.lng), image: markerImage });
     var labelOverlay = new kakao.maps.CustomOverlay({ content: '<div class="marker-label">' + place.name + '</div>', position: new kakao.maps.LatLng(place.lat, place.lng), xAnchor: 0.5, yAnchor: 0, map: null });
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
-    var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:8px;right:8px;z-index:10;"></i>` : '';
+    var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:12px;right:12px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div class="infoWindow" style="position:relative;padding:8px; font-size:14px; line-height:1.4;">`
-      +   '<strong>' + place.name + '</strong><br/>'
-      +   place.address + '<br/>'
-      +   '<a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none;">🔥 투표하기</a>'
+      + `<div class="infoWindow" style="position:relative;padding:16px; font-size:15px; line-height:1.5; min-width:280px; max-width:350px;">`
+      +   '<strong style="font-size:16px; margin-bottom:8px; display:block;">' + place.name + '</strong>'
+      +   '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
+      + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:8px; font-size:13px;">장르: ' + place.genres + '</div>' : '')
+      +   '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
+      + (isAdmin && place.categoryId === 1 ? '&nbsp;&nbsp;<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:12px;">✏️ 장르 편집</a>' : '') + '</div>'
       + '</div>';
     var infowindow = new kakao.maps.InfoWindow({ content: infoContent });
     kakao.maps.event.addListener(marker, 'click', function() {
@@ -235,8 +252,8 @@
           heart.className = 'bi bi-heart wish-heart';
           heart.setAttribute('data-place-id', place.id);
           heart.style.position = 'absolute';
-          heart.style.top = '8px';
-          heart.style.right = '8px';
+          heart.style.top = '12px';
+          heart.style.right = '12px';
           heart.style.zIndex = '10';
           iw.appendChild(heart);
           // 로그인 여부에 따라 클릭 이벤트 분기
@@ -632,6 +649,15 @@
       var filtered = list.filter(function(item) {
         return item && item.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
       });
+      
+      // 디버깅: 지역명 매핑 확인
+      if (type === '지역') {
+        console.log('검색 키워드:', keyword);
+        console.log('dongToRegionId 매핑:', dongToRegionId);
+        console.log('regionNameList:', regionNameList);
+        console.log('필터링된 결과:', filtered);
+      }
+      
       // === 카테고리 바 표시/숨김 ===
       var catBar = document.getElementById('categoryCountsBar');
       if (type === '가게') {
@@ -649,6 +675,7 @@
         // 지역명 리스트를 네이버 스타일로, 클릭 시 해당 지역의 핫플 리스트 출력
         searchResultBox.innerHTML = filtered.map(function(dong, idx) {
           var regionId = dongToRegionId[dong];
+          console.log('지역명:', dong, '매핑된 ID:', regionId);
           var count = regionCategoryCounts.find(function(c) { return String(c.region_id) === String(regionId); });
           var countHtml = '';
           if (count) {
@@ -670,6 +697,8 @@
         // 지역명 클릭 이벤트 바인딩
         Array.from(document.getElementsByClassName('region-search-item')).forEach(function(item) {
           var dong = item.querySelector('.region-name').textContent;
+          // 평점 부분 제거 (예: "홍대입구 (★ 5.0)" -> "홍대입구")
+          dong = dong.replace(/\s*\([^)]*\)\s*$/, '');
           item.onclick = function() {
             renderHotplaceListByDong(dong);
           };
@@ -683,6 +712,7 @@
         searchResultBox.innerHTML = matchedHotplaces.map(function(h) {
           var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
           var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
+          var genreHtml = (h.genres && h.genres !== '') ? '<div style="color:#9c27b0; font-weight:600; margin-top:2px; font-size:0.9rem;">장르: ' + h.genres + '</div>' : '';
           return '<div class="hotplace-list-card">'
             + '<div style="flex:1; min-width:0;">'
             +   '<div style="display:flex; align-items:center; gap:6px;">'
@@ -690,6 +720,7 @@
             +     '<span class="hotplace-category" style="color:#888; margin-left:4px;">' + (categoryMap[h.categoryId]||'') + '</span>'
             +   '</div>'
             +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
+            + genreHtml
             + '</div>'
             + '<div class="hotplace-card-heart">' + heartHtml + '</div>'
             + '<div class="hotplace-card-actions">' + voteButtonHtml + '</div>'
@@ -732,6 +763,7 @@
       window.selectedDong = dong;
       window.selectedCategory = categoryId || null;
       var regionId = window.dongToRegionId[dong];
+      
       var catBar = document.getElementById('categoryCountsBar');
       if (!regionId) {
         catBar.style.display = 'none';
@@ -808,6 +840,7 @@
       window.searchResultBox.innerHTML = dongTitle + filtered.map(function(h) {
         var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
         var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
+        var genreHtml = (h.genres && h.genres !== '') ? '<div style="color:#9c27b0; font-weight:600; margin-top:2px; font-size:0.9rem;">장르: ' + h.genres + '</div>' : '';
         return '<div class="hotplace-list-card">'
           + '<div style="flex:1; min-width:0;">'
           +   '<div style="display:flex; align-items:center; gap:6px;">'
@@ -815,6 +848,7 @@
           +     '<span class="hotplace-category" style="color:#888; margin-left:4px;">' + (categoryMap[h.categoryId]||'') + '</span>'
           +   '</div>'
           +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
+          + genreHtml
           + '</div>'
           + '<div class="hotplace-card-heart">' + heartHtml + '</div>'
           + '<div class="hotplace-card-actions">' + voteButtonHtml + '</div>'
@@ -909,8 +943,11 @@
 
   // 리스트만 렌더링
   window.renderHotplaceList = function(dong, categoryId) {
+    console.log('renderHotplaceList 호출 - 지역명:', dong, '카테고리:', categoryId);
     var regionId = window.dongToRegionId[dong];
+    console.log('매핑된 regionId:', regionId);
     if (!regionId) {
+      console.log('regionId가 없음 - 해당 지역의 핫플레이스가 없습니다.');
       window.searchResultBox.innerHTML = '<div style="color:#bbb; text-align:center; padding:40px 0;">해당 지역의 핫플레이스가 없습니다.</div>';
       return;
     }
@@ -930,6 +967,7 @@
     window.searchResultBox.innerHTML = dongTitle + filtered.map(function(h) {
       var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
       var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
+      var genreHtml = (h.genres && h.genres !== '') ? '<div style="color:#9c27b0; font-weight:600; margin-top:2px; font-size:0.9rem;">장르: ' + h.genres + '</div>' : '';
       return '<div class="hotplace-list-card">'
         + '<div style="flex:1; min-width:0;">'
         +   '<div style="display:flex; align-items:center; gap:6px;">'
@@ -937,6 +975,7 @@
         +     '<span class="hotplace-category" style="color:#888; margin-left:4px;">' + (categoryMap[h.categoryId]||'') + '</span>'
         +   '</div>'
         +   '<div class="hotplace-address" style="color:#666; margin-top:2px;">' + h.address + '</div>'
+        + genreHtml
         + '</div>'
         + '<div class="hotplace-card-actions">'
         + heartHtml
@@ -1079,4 +1118,331 @@
     font-size: 1.08rem;
     margin-right: 8px;
   }
+  
+  /* 장르 편집 모달 스타일 */
+  .genre-edit-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .genre-edit-content {
+    background: white;
+    border-radius: 16px;
+    padding: 24px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  
+  .genre-edit-title {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .genre-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .genre-item {
+    padding: 8px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 20px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+  }
+  
+  .genre-item:hover {
+    border-color: #1275E0;
+    background: #f0f4fa;
+  }
+  
+  .genre-item.selected {
+    border-color: #1275E0;
+    background: #1275E0;
+    color: white;
+  }
+  
+  .genre-edit-buttons {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+    margin-top: 20px;
+  }
+  
+  .genre-edit-btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  
+  .genre-edit-btn.cancel {
+    background: #f5f5f5;
+    color: #666;
+  }
+  
+  .genre-edit-btn.cancel:hover {
+    background: #e0e0e0;
+  }
+  
+  .genre-edit-btn.save {
+    background: #1275E0;
+    color: white;
+  }
+  
+  .genre-edit-btn.save:hover {
+    background: #0d5bb8;
+  }
 </style>
+
+<!-- 장르 편집 모달 -->
+<div id="genreEditModal" class="genre-edit-modal">
+  <div class="genre-edit-content">
+    <div class="genre-edit-title">장르 편집</div>
+    <div id="genreEditPlaceName" style="margin-bottom: 16px; color: #666; font-size: 0.95rem;"></div>
+    <div class="genre-list" id="genreList">
+      <!-- 장르 목록이 여기에 동적으로 추가됩니다 -->
+    </div>
+    <div class="genre-edit-buttons">
+      <button class="genre-edit-btn cancel" onclick="closeGenreEditModal()">취소</button>
+      <button class="genre-edit-btn save" onclick="saveGenreChanges()">저장</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// 장르 편집 관련 변수
+var currentEditingPlaceId = null;
+var currentEditingPlaceName = null;
+var genreChanges = {
+  added: [],
+  removed: []
+};
+
+// 장르 편집 모달 열기
+function openGenreEditModal(placeId, placeName) {
+  currentEditingPlaceId = placeId;
+  currentEditingPlaceName = placeName;
+  document.getElementById('genreEditPlaceName').textContent = placeName;
+  
+  // 장르 목록 가져오기
+  fetch('<%=root%>/main/genreEditAction.jsp', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: 'action=getGenres&placeId=' + placeId
+  })
+  .then(response => response.json())
+  .then(data => {
+    if(data.success) {
+      renderGenreList(data.genres);
+      document.getElementById('genreEditModal').style.display = 'flex';
+    } else {
+      showToast('장르 목록을 불러오는데 실패했습니다.', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    showToast('장르 목록을 불러오는데 실패했습니다.', 'error');
+  });
+}
+
+// 장르 목록 렌더링
+function renderGenreList(genres) {
+  const genreList = document.getElementById('genreList');
+  genreList.innerHTML = '';
+  
+  genres.forEach(genre => {
+    const genreItem = document.createElement('div');
+    genreItem.className = 'genre-item' + (genre.isSelected ? ' selected' : '');
+    genreItem.textContent = genre.genreName;
+    genreItem.onclick = function() {
+      toggleGenreSelection(genre.genreId, genre.genreName, this);
+    };
+    genreList.appendChild(genreItem);
+  });
+}
+
+// 장르 선택 토글
+function toggleGenreSelection(genreId, genreName, element) {
+  const isSelected = element.classList.contains('selected');
+  
+  if(isSelected) {
+    // 선택 해제
+    element.classList.remove('selected');
+    genreChanges.removed.push(genreId);
+    // 추가 목록에서 제거
+    const addIndex = genreChanges.added.indexOf(genreId);
+    if(addIndex > -1) {
+      genreChanges.added.splice(addIndex, 1);
+    }
+  } else {
+    // 선택
+    element.classList.add('selected');
+    genreChanges.added.push(genreId);
+    // 제거 목록에서 제거
+    const removeIndex = genreChanges.removed.indexOf(genreId);
+    if(removeIndex > -1) {
+      genreChanges.removed.splice(removeIndex, 1);
+    }
+  }
+}
+
+// 장르 편집 모달 닫기
+function closeGenreEditModal() {
+  document.getElementById('genreEditModal').style.display = 'none';
+  currentEditingPlaceId = null;
+  currentEditingPlaceName = null;
+  genreChanges = { added: [], removed: [] };
+}
+
+// 장르 변경사항 저장
+function saveGenreChanges() {
+  if(genreChanges.added.length === 0 && genreChanges.removed.length === 0) {
+    closeGenreEditModal();
+    return;
+  }
+  
+  // 추가할 장르들
+  const addPromises = genreChanges.added.map(genreId => 
+    fetch('<%=root%>/main/genreEditAction.jsp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=add&placeId=' + currentEditingPlaceId + '&genreId=' + genreId
+    }).then(response => response.json())
+  );
+  
+  // 제거할 장르들
+  const removePromises = genreChanges.removed.map(genreId => 
+    fetch('<%=root%>/main/genreEditAction.jsp', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: 'action=remove&placeId=' + currentEditingPlaceId + '&genreId=' + genreId
+    }).then(response => response.json())
+  );
+  
+  Promise.all([...addPromises, ...removePromises])
+    .then(results => {
+      const success = results.every(result => result.success);
+      if(success) {
+        showToast('장르가 성공적으로 업데이트되었습니다.', 'success');
+        
+        // 마지막 결과에서 업데이트된 장르 목록 가져오기
+        const lastResult = results[results.length - 1];
+        if(lastResult.genres !== undefined) {
+          // 지도에서 해당 장소의 장르 정보 업데이트
+          updatePlaceGenresOnMap(currentEditingPlaceId, lastResult.genres);
+        }
+        
+        closeGenreEditModal();
+      } else {
+        showToast('장르 업데이트 중 오류가 발생했습니다.', 'error');
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      showToast('장르 업데이트 중 오류가 발생했습니다.', 'error');
+    });
+}
+
+// 지도에서 장소의 장르 정보 업데이트
+function updatePlaceGenresOnMap(placeId, newGenres) {
+  // hotplaces 배열에서 해당 장소 찾기
+  const place = hotplaces.find(p => p.id === placeId);
+  if(place) {
+    place.genres = newGenres;
+  }
+  
+  // InfoWindow가 열려있다면 업데이트
+  if(openInfoWindow) {
+    // InfoWindow 내용 업데이트 (간단한 방법으로 새로고침)
+    openInfoWindow.close();
+  }
+}
+
+// 모달 외부 클릭 시 닫기
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('genreEditModal').addEventListener('click', function(e) {
+    if(e.target === this) {
+      closeGenreEditModal();
+    }
+  });
+});
+
+// showToast 함수 정의
+function showToast(message, type) {
+  // 기존 토스트 제거
+  const existingToast = document.querySelector('.toast-message');
+  if (existingToast) {
+    existingToast.remove();
+  }
+  
+  // 새 토스트 생성
+  const toast = document.createElement('div');
+  toast.className = 'toast-message';
+  toast.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+  `;
+  
+  // 타입에 따른 스타일 설정
+  if (type === 'success') {
+    toast.style.backgroundColor = '#4caf50';
+  } else if (type === 'error') {
+    toast.style.backgroundColor = '#f44336';
+  } else {
+    toast.style.backgroundColor = '#2196f3';
+  }
+  
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  // 애니메이션
+  setTimeout(() => {
+    toast.style.transform = 'translateX(0)';
+  }, 100);
+  
+  // 자동 제거
+  setTimeout(() => {
+    toast.style.transform = 'translateX(100%)';
+    setTimeout(() => {
+      if (toast.parentNode) {
+        toast.remove();
+      }
+    }, 300);
+  }, 3000);
+}
+</script>

@@ -43,6 +43,8 @@
 <link rel="stylesheet" href="<%=root%>/css/mypage.css">
 <!-- MD 페이지 -->
 <link rel="stylesheet" href="<%=root%>/css/md.css">
+<!-- 공지사항 -->
+<link rel="stylesheet" href="<%=root%>/css/notice.css">
 </head>
 <body>
 
