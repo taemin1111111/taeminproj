@@ -1,0 +1,293 @@
+@charset "UTF-8";
+
+/* ===== TAEMIN 게시판 관리 페이지 스타일 ===== */
+
+/* 메인 컨테이너 */
+.taemin-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 30px 20px;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+    min-height: 100vh;
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 페이지 헤더 */
+.taemin-header {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+}
+
+.taemin-header h1 {
+    color: #1a1a1a;
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.taemin-header h1 i {
+    color: #ff6b6b;
+    font-size: 32px;
+}
+
+/* 게시물 카드 */
+.taemin-post-card {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border: 1px solid #e9ecef;
+}
+
+/* 게시물 정보 그리드 */
+.taemin-post-info {
+    display: grid;
+    grid-template-columns: 160px 220px 180px 160px;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* 사용자 정보 */
+.taemin-user-info {
+    font-weight: 600;
+    color: #1a1a1a;
+    font-size: 14px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+/* 타임스탬프 */
+.taemin-timestamp {
+    color: #666;
+    font-size: 13px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+    font-weight: 500;
+}
+
+/* 통계 정보 */
+.taemin-stats {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+}
+
+.taemin-stat-item {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+    font-weight: 500;
+    font-size: 12px;
+    color: #495057;
+    min-width: 60px;
+    text-align: center;
+    transition: background-color 0.2s ease;
+}
+
+/* 신고 건수 배지 */
+.taemin-report-badge {
+    background: #ff6b6b;
+    color: white;
+    padding: 10px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    border: none;
+    cursor: default;
+}
+
+/* 액션 버튼 영역 */
+.taemin-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    justify-content: flex-end;
+    padding-top: 20px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* 토글 버튼 */
+.taemin-toggle-btn {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    color: #666;
+    cursor: pointer;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    min-width: 40px;
+    text-align: center;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.taemin-toggle-btn:hover {
+    background: #e9ecef;
+    color: #1a1a1a;
+}
+
+/* 삭제 버튼 */
+.taemin-delete-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 12px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+}
+
+.taemin-delete-btn:hover {
+    background: #c82333;
+}
+
+/* 신고 상세 정보 드롭다운 */
+.taemin-details {
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin: 16px 0 0 0;
+    padding: 20px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+/* 신고 항목 */
+.taemin-report-item {
+    background: white;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    border: 1px solid #e9ecef;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.taemin-report-item:last-child {
+    margin-bottom: 0;
+}
+
+/* 신고 헤더 */
+.taemin-report-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
+/* 신고 사유 */
+.taemin-report-reason {
+    font-weight: 600;
+    background: #ff6b6b;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+/* 신고 시간 */
+.taemin-report-time {
+    font-size: 12px;
+    color: #999;
+    background: #f8f9fa;
+    padding: 4px 8px;
+    border-radius: 6px;
+}
+
+/* 신고 내용 */
+.taemin-report-content {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 10px;
+    border-left: 4px solid #ff6b6b;
+}
+
+/* 빈 상태 */
+.taemin-empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+}
+
+.taemin-empty-state i {
+    font-size: 64px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.taemin-empty-state h3 {
+    margin-bottom: 12px;
+    color: #1a1a1a;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.taemin-empty-state p {
+    margin: 0;
+    color: #999;
+    font-size: 16px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .taemin-post-info {
+        grid-template-columns: 140px 180px 160px 140px;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 992px) {
+    .taemin-post-info {
+        grid-template-columns: 120px 160px 140px 120px;
+        gap: 12px;
+    }
+    
+    .taemin-header h1 {
+        font-size: 24px;
+    }
+}
+
+@media (max-width: 768px) {
+    .taemin-container {
+        padding: 20px 15px;
+    }
+    
+    .taemin-post-info {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .taemin-post-card {
+        padding: 20px;
+    }
+    
+    .taemin-actions {
+        justify-content: center;
+        gap: 15px;
+    }
+}
+
+

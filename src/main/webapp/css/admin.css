@@ -1,201 +1,267 @@
 @charset "UTF-8";
 
 /* 관리자 페이지 전용 컨테이너 */
-.report-admin-container {
-    max-width: 800px;
+.admin-report-container {
+    max-width: 1200px;
     margin: 0 auto;
     padding: 20px;
     background: #1a1a1a;
     min-height: 100vh;
 }
 
-.report-admin-header {
-    background: white;
-    border-radius: 16px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-
-.report-admin-header h1 {
-    color: #1a1a1a;
-    font-size: 24px;
-    font-weight: 600;
-    margin: 0;
-}
-
-.report-admin-post-card {
-    background: white;
-    border-radius: 16px;
+/* 회원 관리 페이지 전용 컨테이너 */
+.admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
     padding: 20px;
-    margin-bottom: 16px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
 }
 
-.report-admin-post-info {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    flex: 1;
+/* 회원 관리 페이지 제목 */
+.page-title {
+    color: white !important;
 }
 
-.report-admin-user-info {
-    font-weight: 600;
-    color: #1a1a1a;
-    min-width: 120px;
-}
-
-.report-admin-timestamp {
-    color: #666;
-    font-size: 14px;
-    min-width: 180px;
-}
-
-.report-admin-stats {
-    display: flex;
-    gap: 15px;
-    color: #666;
-    font-size: 14px;
-}
-
-.report-admin-report-count {
-    background: #ff6b6b;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-left: 15px;
-}
-
-.report-admin-red-bar {
-    width: 4px;
-    height: 20px;
-    background: #ff6b6b;
-    border-radius: 2px;
-    margin-left: 10px;
-}
-
-.report-admin-toggle-btn {
-    background: none;
-    border: none;
-    color: #666;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 8px;
-    transition: all 0.2s ease;
-    margin-left: 10px;
-    font-size: 14px;
-}
-
-.report-admin-toggle-btn:hover {
-    background: #f8f9fa;
-    color: #1a1a1a;
-}
-
-.report-admin-btn-delete-inline {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 6px;
-    font-size: 12px;
-    cursor: pointer;
-    margin-left: 10px;
-    transition: all 0.2s ease;
-}
-
-.report-admin-btn-delete-inline:hover {
-    background: #c82333;
-}
-
-.report-admin-report-details {
-    display: none;
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #eee;
-}
-
-.report-admin-report-item {
-    background: #f8f9fa;
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-}
-
-.report-admin-report-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.report-admin-report-reason {
-    font-weight: 600;
-    color: #1a1a1a;
-}
-
-.report-admin-report-time {
-    font-size: 12px;
-    color: #999;
-}
-
-.report-admin-report-content {
-    color: #666;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.report-admin-action-buttons {
-    display: flex;
-    gap: 8px;
-    margin-top: 16px;
-}
-
-.report-admin-btn-view {
-    background: #007bff;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    text-decoration: none;
-    transition: all 0.2s ease;
-}
-
-.report-admin-btn-view:hover {
-    background: #0056b3;
-    color: white;
-    text-decoration: none;
-}
-
-.report-admin-btn-delete {
-    background: #dc3545;
-    color: white;
-    border: none;
-    padding: 8px 16px;
-    border-radius: 8px;
-    font-size: 14px;
-    transition: all 0.2s ease;
-}
-
-.report-admin-btn-delete:hover {
-    background: #c82333;
-}
-
-.report-admin-empty-state {
-    text-align: center;
-    padding: 60px 20px;
-    color: #666;
-    background: white;
+/* 통계 카드 스타일링 - 대기업 스타일 */
+.stat-card {
+    background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+    border: 1px solid #e9ecef;
     border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    height: 100%;
 }
 
-.report-admin-empty-state i {
-    font-size: 48px;
-    color: #ddd;
-    margin-bottom: 16px;
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #007bff, #6610f2);
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
 }
+
+.stat-card:hover::before {
+    transform: scaleX(1);
+}
+
+.stat-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+    border-color: #007bff;
+}
+
+.stat-card.active-filter {
+    border-color: #007bff;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    box-shadow: 0 8px 30px rgba(0, 123, 255, 0.2);
+}
+
+.stat-card.active-filter::before {
+    transform: scaleX(1);
+    background: linear-gradient(90deg, #007bff, #6610f2);
+}
+
+.stat-card .card-body {
+    padding: 24px 20px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card h3 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card.active-filter h3 {
+    background: linear-gradient(135deg, #007bff, #6610f2);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card .card-text {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #6c757d;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-card.active-filter .card-text {
+    color: #007bff;
+    font-weight: 700;
+}
+
+/* 통계 카드 색상별 스타일 */
+.stat-card[data-filter="all"] h3 {
+    background: linear-gradient(135deg, #007bff, #0056b3);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="naver"] h3 {
+    background: linear-gradient(135deg, #03c75a, #00c73c);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="general"] h3 {
+    background: linear-gradient(135deg, #6c757d, #495057);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="admin"] h3 {
+    background: linear-gradient(135deg, #fd7e14, #e55a00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="status-C"] h3 {
+    background: linear-gradient(135deg, #dc3545, #c82333);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="status-B"] h3 {
+    background: linear-gradient(135deg, #fd7e14, #e55a00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card[data-filter="status-A"] h3 {
+    background: linear-gradient(135deg, #198754, #146c43);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 통계 카드 호버 효과 */
+.stat-card:hover[data-filter="all"] h3 {
+    background: linear-gradient(135deg, #0056b3, #004085);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="naver"] h3 {
+    background: linear-gradient(135deg, #00c73c, #009a2e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="general"] h3 {
+    background: linear-gradient(135deg, #495057, #343a40);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="admin"] h3 {
+    background: linear-gradient(135deg, #e55a00, #cc4a00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="status-C"] h3 {
+    background: linear-gradient(135deg, #c82333, #a71e2a);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="status-B"] h3 {
+    background: linear-gradient(135deg, #e55a00, #cc4a00);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.stat-card:hover[data-filter="status-A"] h3 {
+    background: linear-gradient(135deg, #146c43, #0f5132);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+/* 통계 카드 애니메이션 */
+@keyframes cardPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.stat-card.active-filter {
+    animation: cardPulse 0.6s ease-in-out;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .stat-card .card-body {
+        padding: 16px 12px;
+    }
+    
+    .stat-card h3 {
+        font-size: 2rem;
+    }
+    
+    .stat-card .card-text {
+        font-size: 0.85rem;
+    }
+}
+
+/* 회원 테이블 스타일 */
+.member-table {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* 회원 상태별 색상 */
+.status-active { 
+    color: #198754; 
+    font-weight: bold; 
+}
+
+.status-warning { 
+    color: #fd7e14; 
+    font-weight: bold; 
+}
+
+.status-banned { 
+    color: #dc3545; 
+    font-weight: bold; 
+}
+
+/* 가입 경로별 색상 */
+.provider-admin { 
+    color: #fd7e14; 
+    font-weight: bold; 
+}
+
+.provider-naver { 
+    color: #0dcaf0; 
+    font-weight: bold; 
+}
+

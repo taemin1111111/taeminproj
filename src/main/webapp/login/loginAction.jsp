@@ -50,6 +50,18 @@
         return;
     }
     
+    // 계정 상태 확인
+    if ("C".equals(member.getStatus())) {
+        // 정지된 계정인 경우
+%>
+        <script>
+            alert("정지당한 계정입니다. 관리자에게 문의하세요.");
+            history.back();
+        </script>
+<%
+        return;
+    }
+    
     // 로그인 성공 - 세션에 로그인 정보 저장
     session.setAttribute("loginid", userid);
     session.setAttribute("nickname", member.getNickname());

@@ -67,8 +67,23 @@ boolean exists = dao.isDuplicateId(naverId);
 if (exists) {
     // 이미 회원이라면 → 닉네임도 불러와서 세션 저장
     MemberDTO dto = dao.getMember(naverId);
+    
+    // 계정 상태 확인
+    if ("C".equals(dto.getStatus())) {
+        // 정지된 계정인 경우
+        session.invalidate(); // 세션 초기화
+%>
+        <script>
+            alert("정지당한 계정입니다. 관리자에게 문의하세요.");
+            location.href="<%=root%>/login/loginModal.jsp";
+        </script>
+<%
+        return;
+    }
+    
     session.setAttribute("loginid", naverId);
     session.setAttribute("nickname", dto.getNickname());
+    session.setAttribute("provider", dto.getProvider());
     response.sendRedirect(root + "/index.jsp");
 } else {
     // 회원가입 안한 사람 → 네이버 정보 세션 저장 후 회원가입으로 이동
