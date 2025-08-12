@@ -281,6 +281,23 @@
               loadPlaceImages(place.id);
             }, 300);
           }
+          
+          // 관리자용 버튼들 추가 (하트와 같은 위치에)
+          if (isAdmin) {
+            // + 버튼 (이미지 추가)
+            var addBtn = document.createElement('button');
+            addBtn.onclick = function() { openImageUploadModal(place.id); };
+            addBtn.style.cssText = 'position:absolute; top:12px; right:50px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:10;';
+            addBtn.innerHTML = '+';
+            iw.appendChild(addBtn);
+            
+            // 수정 버튼 (이미지 관리)
+            var editBtn = document.createElement('button');
+            editBtn.onclick = function() { openImageManageModal(place.id); };
+            editBtn.style.cssText = 'position:absolute; top:12px; right:88px; background:#ff6b35; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:14px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3); z-index:10;';
+            editBtn.innerHTML = '✏️';
+            iw.appendChild(editBtn);
+          }
         }
       }, 100);
     });
@@ -1523,12 +1540,6 @@ function loadPlaceImages(placeId, retryCount = 0) {
           '<div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 8px; border-radius:12px; font-size:11px;">' +
             (currentImageIndex + 1) + ' / ' + data.images.length +
           '</div>' +
-          
-          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
-          (isAdmin ? 
-            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
-                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
-          : '') +
         '</div>';
         
         container.innerHTML = imageHtml;
@@ -1539,12 +1550,6 @@ function loadPlaceImages(placeId, retryCount = 0) {
             '<div style="font-size:48px; margin-bottom:8px;">📷</div>' +
             '<div>사진이 없습니다</div>' +
           '</div>' +
-          
-          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
-          (isAdmin ? 
-            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
-                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
-          : '') +
         '</div>';
         
         container.innerHTML = noImageHtml;
@@ -1666,6 +1671,211 @@ function closeImageUploadModal() {
   if (modal) modal.remove();
 }
 
+// 이미지 관리 모달 열기 (관리자용)
+function openImageManageModal(placeId) {
+  const modal = document.createElement('div');
+  modal.id = 'imageManageModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  
+  modal.innerHTML = '<div style="background:white; padding:24px; border-radius:12px; max-width:800px; width:90%; max-height:90%; overflow-y:auto;">' +
+    '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">' +
+      '<h3 style="margin:0; color:#333;">이미지 관리</h3>' +
+      '<button onclick="closeImageManageModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>' +
+    '</div>' +
+    
+    '<div id="imageManageContent" style="min-height:200px; display:flex; align-items:center; justify-content:center; color:#666;">' +
+      '<div>이미지 로딩 중...</div>' +
+    '</div>' +
+  '</div>';
+  
+  document.body.appendChild(modal);
+  
+  // 이미지 목록 로드
+  loadImagesForManagement(placeId);
+}
+
+// 이미지 관리 모달 닫기
+function closeImageManageModal() {
+  const modal = document.getElementById('imageManageModal');
+  if (modal) modal.remove();
+}
+
+// 이미지 관리용 이미지 목록 로드
+function loadImagesForManagement(placeId) {
+  const contentDiv = document.getElementById('imageManageContent');
+  if (!contentDiv) return;
+  
+  const requestUrl = '<%=root%>/main/getPlaceImages.jsp?placeId=' + placeId;
+  
+  fetch(requestUrl)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.images && data.images.length > 0) {
+        // 이미지가 있는 경우 - 그리드 형태로 표시
+        let imagesHtml = '<div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:16px; margin-bottom:20px;">';
+        
+        data.images.forEach((image, index) => {
+          console.log('이미지 데이터:', image); // 디버깅 로그 추가
+          const timestamp = Date.now();
+          
+          // 대표사진 변경 버튼 (1번이 아닌 이미지에만 표시)
+          const mainImageButton = image.imageOrder !== 1 ? 
+            '<button onclick="setAsMainImage(' + image.id + ', ' + placeId + ')" ' +
+            'style="background:#28a745; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px; margin-left:4px;">대표사진</button>' : '';
+          
+          imagesHtml += '<div style="position:relative; border:1px solid #ddd; border-radius:8px; overflow:hidden; background:#f8f9fa;">' +
+            '<img src="http://localhost:8083<%=root%>' + image.imagePath + '?t=' + timestamp + '" ' +
+                 'style="width:100%; height:150px; object-fit:cover;" alt="이미지 ' + (index + 1) + '">' +
+            '<div style="padding:12px; text-align:center;">' +
+              '<div style="font-size:12px; color:#666; margin-bottom:8px;">순서: ' + image.imageOrder + '</div>' +
+              '<div style="display:flex; gap:4px; justify-content:center;">' +
+                '<button onclick="deleteImage(' + image.id + ', ' + placeId + ')" ' +
+                        'style="background:#dc3545; color:white; border:none; padding:6px 12px; border-radius:4px; cursor:pointer; font-size:12px;">삭제</button>' +
+                mainImageButton +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        });
+        
+        imagesHtml += '</div>';
+        contentDiv.innerHTML = imagesHtml;
+      } else {
+        // 이미지가 없는 경우
+        contentDiv.innerHTML = '<div style="text-align:center; color:#666;">' +
+          '<div style="font-size:48px; margin-bottom:16px;">📷</div>' +
+          '<div>등록된 이미지가 없습니다</div>' +
+        '</div>';
+      }
+    })
+    .catch(error => {
+      console.error('이미지 로드 오류:', error);
+      contentDiv.innerHTML = '<div style="text-align:center; color:#dc3545;">이미지 로드에 실패했습니다</div>';
+    });
+}
+
+// 이미지 삭제 함수
+function deleteImage(imageId, placeId) {
+  console.log('deleteImage 호출됨 - imageId:', imageId, 'placeId:', placeId);
+  
+  if (!imageId || imageId === 'undefined' || imageId === 'null') {
+    console.error('유효하지 않은 imageId:', imageId);
+    showToast('이미지 ID가 유효하지 않습니다.', 'error');
+    return;
+  }
+  
+  if (!confirm('정말로 이 이미지를 삭제하시겠습니까?')) {
+    return;
+  }
+  
+  const requestUrl = '<%=root%>/main/deleteImage.jsp';
+  
+  // URLSearchParams를 사용하여 일반적인 POST 요청으로 전송
+  const params = new URLSearchParams();
+  params.append('imageId', imageId);
+  
+  console.log('전송할 파라미터:', params.toString());
+  
+  fetch(requestUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('삭제 응답:', data);
+    if (data.success) {
+      // 성공 시 이미지 목록 새로고침
+      loadImagesForManagement(placeId);
+      
+      // InfoWindow의 이미지도 새로고침
+      refreshInfoWindowImages(placeId);
+      
+      // 토스트 메시지 표시
+      showToast('이미지가 성공적으로 삭제되었습니다.', 'success');
+    } else {
+      showToast(data.message || '이미지 삭제에 실패했습니다.', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('이미지 삭제 오류:', error);
+    showToast('이미지 삭제 중 오류가 발생했습니다.', 'error');
+  });
+}
+
+// InfoWindow 이미지 새로고침
+function refreshInfoWindowImages(placeId) {
+  // InfoWindow가 열려있다면 이미지 새로고침
+  const infoWindows = document.querySelectorAll('.infoWindow');
+  for (let iw of infoWindows) {
+    const imageContainer = iw.querySelector('.place-images-container');
+    if (imageContainer && imageContainer.getAttribute('data-place-id') == placeId) {
+      loadPlaceImages(placeId);
+      break;
+    }
+  }
+}
+
+// 대표사진 변경 함수
+function setAsMainImage(imageId, placeId) {
+  console.log('setAsMainImage 호출됨 - imageId:', imageId, 'placeId:', placeId);
+  
+  if (!imageId || imageId === 'undefined' || imageId === 'null') {
+    console.error('유효하지 않은 imageId:', imageId);
+    showToast('이미지 ID가 유효하지 않습니다.', 'error');
+    return;
+  }
+  
+  const requestUrl = '<%=root%>/main/setMainImage.jsp';
+  
+  // URLSearchParams를 사용하여 POST 요청으로 전송
+  const params = new URLSearchParams();
+  params.append('imageId', imageId);
+  params.append('placeId', placeId);
+  
+  console.log('전송할 파라미터:', params.toString());
+  
+  fetch(requestUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params
+  })
+  .then(response => response.json())
+  .then(data => {
+    console.log('대표사진 변경 응답:', data);
+    if (data.success) {
+      // 성공 시 이미지 목록 새로고침
+      loadImagesForManagement(placeId);
+      
+      // InfoWindow의 이미지도 새로고침
+      refreshInfoWindowImages(placeId);
+      
+      // 토스트 메시지 표시
+      showToast('대표사진이 성공적으로 변경되었습니다.', 'success');
+    } else {
+      showToast(data.message || '대표사진 변경에 실패했습니다.', 'error');
+    }
+  })
+  .catch(error => {
+    console.error('대표사진 변경 오류:', error);
+    showToast('대표사진 변경 중 오류가 발생했습니다.', 'error');
+  });
+}
+
 // 이미지 업로드 처리 - 간단한 방식으로 변경
 // 이제 일반 폼 제출로 처리되므로 AJAX 불필요
 
@@ -1708,11 +1918,7 @@ function changeImage(placeId, totalImages, currentIndex, direction) {
             (newIndex + 1) + ' / ' + totalImages +
           '</div>' +
           
-          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
-          (isAdmin ? 
-            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
-                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
-          : '') +
+
         '</div>';
         
         const container = document.querySelector(`.place-images-container[data-place-id="${placeId}"]`);
