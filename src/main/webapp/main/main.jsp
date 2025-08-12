@@ -234,7 +234,10 @@
       +   '<div class="place-images-container" style="position:relative; width:100%; height:200px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:13px;" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
           
           '<div style="padding:16px;">'
-      +     '<strong style="font-size:16px; margin-bottom:8px; display:block;">' + place.name + '</strong>'
+      +     '<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">'
+      +       '<strong style="font-size:16px;">' + place.name + '</strong>'
+      +       '<span style="color:#e91e63; font-size:14px;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
+      +     '</div>'
       +     '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
       + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:8px; font-size:13px;">장르: ' + place.genres + '</div>' : '')
       +     '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
@@ -281,6 +284,13 @@
               loadPlaceImages(place.id);
             }, 300);
           }
+          
+          // 위시리스트 개수 로드
+          setTimeout(function() {
+            loadWishCount(place.id);
+          }, 400);
+          
+
           
           // 관리자용 버튼들 추가 (하트와 같은 위치에)
           if (isAdmin) {
@@ -1873,6 +1883,38 @@ function setAsMainImage(imageId, placeId) {
   .catch(error => {
     console.error('대표사진 변경 오류:', error);
     showToast('대표사진 변경 중 오류가 발생했습니다.', 'error');
+  });
+}
+
+
+
+// 위시리스트 개수 로드 함수
+function loadWishCount(placeId) {
+  const wishCountElement = document.querySelector('.wish-count-' + placeId);
+  if (!wishCountElement) return;
+  
+  const requestUrl = '<%=root%>/main/getWishCount.jsp';
+  const params = new URLSearchParams();
+  params.append('placeId', placeId);
+  
+  fetch(requestUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      wishCountElement.textContent = data.count;
+    } else {
+      wishCountElement.textContent = '0';
+    }
+  })
+  .catch(error => {
+    console.error('위시리스트 개수 로드 오류:', error);
+    wishCountElement.textContent = '0';
   });
 }
 
