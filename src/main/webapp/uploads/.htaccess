@@ -1,0 +1,18 @@
+# 업로드 디렉토리 보안 설정
+Options -Indexes
+<FilesMatch "\.(jpg|jpeg|png|gif|webp)$">
+    Order Allow,Deny
+    Allow from all
+</FilesMatch>
+
+# PHP 파일 실행 방지
+<FilesMatch "\.(php|php3|php4|php5|phtml|pl|py|jsp|asp|sh|cgi)$">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>
+
+# 이미지 파일만 허용
+<FilesMatch "^(?!.*\.(jpg|jpeg|png|gif|webp)$)">
+    Order Deny,Allow
+    Deny from all
+</FilesMatch>

@@ -1,10 +1,12 @@
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ page import="java.util.*, hotplace_info.*, Map.MapDao, ClubGenre.*" %>
+<%@ page import="java.util.*, hotplace_info.*, Map.MapDao, ClubGenre.*, content_images.*, content_info.*" %>
 <%
     String root = request.getContextPath();
     HotplaceDao hotplaceDao = new HotplaceDao();
     MapDao mapDao = new MapDao();
     ClubGenreDao clubGenreDao = new ClubGenreDao();
+    ContentImagesDao contentImagesDao = new ContentImagesDao();
+    ContentInfoDao contentInfoDao = new ContentInfoDao();
     List<HotplaceDto> hotplaceList = hotplaceDao.getAllHotplaces();
     List<Map<String, Object>> sigunguCenterList = mapDao.getAllSigunguCenters();
     List<Map<String, Object>> sigunguCategoryCountList = mapDao.getSigunguCategoryCounts();
@@ -20,6 +22,7 @@
     Map<String, Double> regionRatings = mapDao.getRegionAverageRatings();
 %>
 <script>
+  var root = '<%=root%>';
   var isLoggedIn = <%= (loginId != null) ? "true" : "false" %>;
   var loginUserId = '<%= (loginId != null ? loginId : "") %>';
   var isAdmin = <%= (provider != null && "admin".equals(provider)) ? "true" : "false" %>;
@@ -227,19 +230,23 @@
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
     var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:12px;right:12px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div class="infoWindow" style="position:relative;padding:16px; font-size:15px; line-height:1.5; min-width:280px; max-width:350px;">`
-      +   '<strong style="font-size:16px; margin-bottom:8px; display:block;">' + place.name + '</strong>'
-      +   '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
+      + `<div class="infoWindow" style="position:relative;padding:0; font-size:15px; line-height:1.5; min-width:280px; max-width:350px; border-radius:12px; overflow:hidden;">`
+      +   '<div class="place-images-container" style="position:relative; width:100%; height:200px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:13px;" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
+          
+          '<div style="padding:16px;">'
+      +     '<strong style="font-size:16px; margin-bottom:8px; display:block;">' + place.name + '</strong>'
+      +     '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
       + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:8px; font-size:13px;">장르: ' + place.genres + '</div>' : '')
-      +   '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
+      +     '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
       + (isAdmin && place.categoryId === 1 ? '&nbsp;&nbsp;<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:12px;">✏️ 장르 편집</a>' : '') + '</div>'
+      +   '</div>'
       + '</div>';
     var infowindow = new kakao.maps.InfoWindow({ content: infoContent });
     kakao.maps.event.addListener(marker, 'click', function() {
       if (openInfoWindow) openInfoWindow.close();
       infowindow.open(map, marker);
       openInfoWindow = infowindow;
-      // InfoWindow가 열린 후, 하트 태그를 직접 append
+      // InfoWindow가 열린 후, 하트 태그와 이미지 로드
       setTimeout(function() {
         var iwEls = document.getElementsByClassName('infoWindow');
         if (iwEls.length > 0) {
@@ -264,6 +271,15 @@
           } else {
             // 하트 상태 동기화 및 이벤트 연결
             setupWishHeartByClass(place.id);
+          }
+          
+          // 하트 태그와 동일한 방식으로 이미지 컨테이너 찾기
+          const imageContainer = iw.querySelector('.place-images-container');
+          if (imageContainer) {
+            // DOM이 완전히 준비될 때까지 대기
+            setTimeout(function() {
+              loadPlaceImages(place.id);
+            }, 300);
           }
         }
       }, 100);
@@ -1445,4 +1461,373 @@ function showToast(message, type) {
     }, 300);
   }, 3000);
 }
+
+// ================================
+// 이미지 관련 함수들
+// ================================
+
+// InfoWindow가 열린 후 이미지 로드
+function loadPlaceImages(placeId, retryCount = 0) {
+  // InfoWindow 내부에서 이미지 컨테이너 찾기
+  const infoWindows = document.querySelectorAll('.infoWindow');
+  let container = null;
+  
+  for (let iw of infoWindows) {
+    const foundContainer = iw.querySelector('.place-images-container');
+    if (foundContainer && foundContainer.getAttribute('data-place-id') == placeId) {
+      container = foundContainer;
+      break;
+    }
+  }
+  
+  if (!container) {
+    // 재시도 로직 (최대 3번)
+    if (retryCount < 3) {
+      setTimeout(() => {
+        loadPlaceImages(placeId, retryCount + 1);
+      }, 200);
+      return;
+    }
+    return;
+  }
+  
+  // AJAX로 이미지 데이터 가져오기
+  const requestUrl = '<%=root%>/main/getPlaceImages.jsp?placeId=' + placeId;
+  fetch(requestUrl)
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.images && data.images.length > 0) {
+        // 이미지가 있는 경우 - 대표 이미지 + 좌우 화살표 + + 버튼
+        
+        const currentImageIndex = 0; // 현재 표시할 이미지 인덱스
+        const currentImage = data.images[currentImageIndex];
+        const timestamp = Date.now();
+        
+        let imageHtml = '<div class="place-image-slider" style="position:relative; width:100%; height:100%;">' +
+          '<!-- 대표 이미지 -->' +
+          '<img src="http://localhost:8083' + root + currentImage.imagePath + '?t=' + timestamp + '" alt="장소 이미지" ' +
+               'style="width:100%; height:100%; object-fit:cover; cursor:pointer;" ' +
+               'onclick="openImageModal(\'http://localhost:8083' + root + currentImage.imagePath + '\', ' + placeId + ', 0)">' +
+          
+          '<!-- 좌우 화살표 (이미지가 2개 이상일 때만 표시) -->' +
+          (data.images.length > 1 ? 
+            '<button class="image-nav-btn prev-btn" onclick="changeImage(' + placeId + ', ' + data.images.length + ', ' + currentImageIndex + ', -1)" ' +
+                    'style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">‹</button>' +
+            '<button class="image-nav-btn next-btn" onclick="changeImage(' + placeId + ', ' + data.images.length + ', ' + currentImageIndex + ', 1)" ' +
+                    'style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex:align-items:center; justify-content:center;">›</button>'
+          : '') +
+          
+          '<!-- 이미지 개수 표시 -->' +
+          '<div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 8px; border-radius:12px; font-size:11px;">' +
+            (currentImageIndex + 1) + ' / ' + data.images.length +
+          '</div>' +
+          
+          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
+          (isAdmin ? 
+            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
+                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
+          : '') +
+        '</div>';
+        
+        container.innerHTML = imageHtml;
+      } else {
+        // 이미지가 없는 경우
+        let noImageHtml = '<div class="no-images" style="position:relative; width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:#f8f9fa; color:#6c757d; font-size:13px;">' +
+          '<div style="text-align:center;">' +
+            '<div style="font-size:48px; margin-bottom:8px;">📷</div>' +
+            '<div>사진이 없습니다</div>' +
+          '</div>' +
+          
+          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
+          (isAdmin ? 
+            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
+                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
+          : '') +
+        '</div>';
+        
+        container.innerHTML = noImageHtml;
+      }
+    })
+    .catch(error => {
+      console.error('이미지 로드 오류:', error);
+      container.innerHTML = '<div class="no-images" style="padding:20px; text-align:center; background:#f8f9fa; border-radius:8px; color:#6c757d; font-size:13px;">사진이 없습니다</div>';
+    });
+}
+
+// 이미지 모달 열기
+function openImageModal(imagePath, placeId, currentIndex) {
+  // HTML에 정의된 모달 사용
+  const modal = document.getElementById('imageModal');
+  const modalImg = document.getElementById('modalImage');
+  
+  if (!modal || !modalImg) {
+    return;
+  }
+  
+  // 캐시 방지를 위한 타임스탬프 추가
+  const timestamp = Date.now();
+  
+  // 이미지 경로 설정
+  modalImg.src = imagePath + '?t=' + timestamp;
+  
+  // 모달에 placeId와 currentIndex 정보 저장
+  modal.setAttribute('data-place-id', placeId);
+  modal.setAttribute('data-current-index', currentIndex);
+  
+  // 이미지 개수 표시 초기화
+  const counter = document.getElementById('modalImageCounter');
+  if (counter) {
+    // InfoWindow에서 총 이미지 개수 가져오기
+    const infoWindow = document.querySelector('.infoWindow');
+    if (infoWindow) {
+      const imageContainer = infoWindow.querySelector('.place-images-container');
+      if (imageContainer) {
+        const counterText = imageContainer.querySelector('div[style*="position:absolute; bottom:10px; right:10px"]');
+        if (counterText) {
+          const match = counterText.textContent.match(/(\d+) \/ (\d+)/);
+          if (match) {
+            const totalImages = parseInt(match[2]);
+            counter.textContent = (currentIndex + 1) + ' / ' + totalImages;
+          }
+        }
+      }
+    }
+  }
+  
+  // 모달 표시
+  modal.classList.add('show');
+}
+
+// 이미지 모달 닫기
+function closeImageModal() {
+  const modal = document.getElementById('imageModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+}
+
+// 이미지 업로드 모달 열기 (관리자용)
+function openImageUploadModal(placeId) {
+  const modal = document.createElement('div');
+  modal.id = 'imageUploadModal';
+  modal.style.cssText = `
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  `;
+  
+  modal.innerHTML = '<div style="background:white; padding:24px; border-radius:12px; max-width:500px; width:90%; max-height:90%; overflow-y:auto;">' +
+    '<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">' +
+      '<h3 style="margin:0; color:#333;">이미지 추가</h3>' +
+      '<button onclick="closeImageUploadModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>' +
+    '</div>' +
+    
+          '<form id="imageUploadForm" action="<%=root%>/main/uploadImages.jsp" method="post" enctype="multipart/form-data">' +
+        '<input type="hidden" name="place_id" value="' + placeId + '">' +
+      '<div style="margin-bottom:16px;">' +
+        '<label style="display:block; margin-bottom:8px; font-weight:500; color:#333;">이미지 파일 선택 (여러장 가능)</label>' +
+        '<input type="file" name="images" multiple accept="image/*" style="width:100%; padding:8px; border:1px solid #ddd; border-radius:6px;" required>' +
+      '</div>' +
+      
+      '<div style="display:flex; gap:8px; justify-content:flex-end;">' +
+        '<button type="button" onclick="closeImageUploadModal()" style="background:#6c757d; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">취소</button>' +
+        '<button type="submit" style="background:#1275E0; color:white; border:none; padding:10px 20px; border-radius:6px; cursor:pointer;">업로드</button>' +
+      '</div>' +
+    '</form>' +
+  '</div>';
+  
+  document.body.appendChild(modal);
+  
+  // 폼 제출 이벤트 추가 - 디버깅용
+  document.getElementById('imageUploadForm').onsubmit = function(e) {
+    console.log('폼 제출 시작 - placeId:', placeId);
+    
+    // 폼 데이터 확인
+    const formData = new FormData(this);
+    console.log('FormData place_id 값:', formData.get('place_id'));
+    console.log('FormData images 값:', formData.get('images'));
+    
+    // 일반 폼 제출 허용
+  };
+}
+
+// 이미지 업로드 모달 닫기
+function closeImageUploadModal() {
+  const modal = document.getElementById('imageUploadModal');
+  if (modal) modal.remove();
+}
+
+// 이미지 업로드 처리 - 간단한 방식으로 변경
+// 이제 일반 폼 제출로 처리되므로 AJAX 불필요
+
+// 이미지 변경 함수 (좌우 화살표 클릭 시)
+function changeImage(placeId, totalImages, currentIndex, direction) {
+  let newIndex = currentIndex + direction;
+  
+  // 인덱스 범위 조정
+  if (newIndex < 0) newIndex = totalImages - 1;
+  if (newIndex >= totalImages) newIndex = 0;
+  
+  // AJAX로 이미지 데이터 다시 가져와서 특정 인덱스 이미지 표시
+  const requestUrl = root + '/main/getPlaceImages.jsp?placeId=' + placeId;
+  
+  fetch(requestUrl)
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      if (data.success && data.images && data.images.length > 0) {
+        const image = data.images[newIndex];
+        const timestamp = Date.now();
+        
+        let imageHtml = '<div class="place-image-slider" style="position:relative; width:100%; height:100%;">' +
+          '<!-- 현재 이미지 -->' +
+          '<img src="http://localhost:8083' + root + image.imagePath + '?t=' + timestamp + '" alt="장소 이미지" ' +
+               'style="width:100%; height:100%; object-fit:cover; cursor:pointer;" ' +
+               'onclick="openImageModal(\'http://localhost:8083' + root + image.imagePath + '\', ' + placeId + ', ' + newIndex + ')">' +
+          
+          '<!-- 좌우 화살표 (이미지가 2개 이상일 때만 표시) -->' +
+          (totalImages > 1 ? 
+            '<button class="image-nav-btn prev-btn" onclick="changeImage(' + placeId + ', ' + totalImages + ', ' + newIndex + ', -1)" ' +
+                    'style="position:absolute; left:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex; align-items:center; justify-content:center;">‹</button>' +
+            '<button class="image-nav-btn next-btn" onclick="changeImage(' + placeId + ', ' + totalImages + ', ' + newIndex + ', 1)" ' +
+                    'style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:16px; display:flex:align-items:center; justify-content:center;">›</button>'
+          : '') +
+          
+          '<!-- 이미지 개수 표시 -->' +
+          '<div style="position:absolute; bottom:10px; right:10px; background:rgba(0,0,0,0.7); color:white; padding:4px 8px; border-radius:12px; font-size:11px;">' +
+            (newIndex + 1) + ' / ' + totalImages +
+          '</div>' +
+          
+          '<!-- 관리자용 + 버튼 (왼쪽 위) -->' +
+          (isAdmin ? 
+            '<button onclick="openImageUploadModal(' + placeId + ')" ' +
+                    'style="position:absolute; top:10px; left:10px; background:#1275E0; color:white; border:none; border-radius:50%; width:32px; height:32px; cursor:pointer; font-size:18px; font-weight:bold; box-shadow:0 2px 8px rgba(0,0,0,0.3);">+</button>'
+          : '') +
+        '</div>';
+        
+        const container = document.querySelector(`.place-images-container[data-place-id="${placeId}"]`);
+        if (container) {
+          container.innerHTML = imageHtml;
+        } else {
+          // InfoWindow 내부에서 찾기 시도
+          const infoWindows = document.querySelectorAll('.infoWindow');
+          let foundContainer = null;
+          
+          for (let iw of infoWindows) {
+            const found = iw.querySelector('.place-images-container');
+            if (found && found.getAttribute('data-place-id') == placeId) {
+              foundContainer = found;
+              break;
+            }
+          }
+          
+          if (foundContainer) {
+            foundContainer.innerHTML = imageHtml;
+          }
+        }
+      }
+    })
+    .catch(error => {
+      console.error('이미지 변경 오류:', error);
+    });
+}
+
+// 모달에서 이미지 변경 (좌우 화살표 클릭 시)
+function changeModalImage(direction) {
+  const modal = document.getElementById('imageModal');
+  if (!modal) return;
+  
+  const placeId = modal.getAttribute('data-place-id');
+  const currentIndex = parseInt(modal.getAttribute('data-current-index'));
+  
+  if (!placeId || isNaN(currentIndex)) {
+    return;
+  }
+  
+  // InfoWindow에서 총 이미지 개수 가져오기
+  const infoWindow = document.querySelector('.infoWindow');
+  if (!infoWindow) return;
+  
+  const imageContainer = infoWindow.querySelector('.place-images-container');
+  if (!imageContainer) return;
+  
+  // 현재 표시된 이미지 개수 표시에서 총 개수 추출
+  const counterText = imageContainer.querySelector('div[style*="position:absolute; bottom:10px; right:10px"]');
+  if (counterText) {
+    const match = counterText.textContent.match(/(\d+) \/ (\d+)/);
+    if (match) {
+      const totalImages = parseInt(match[2]);
+      
+      // changeImage 함수 호출 (InfoWindow 이미지 변경)
+      changeImage(placeId, totalImages, currentIndex, direction);
+      
+      // 모달 이미지도 업데이트
+      setTimeout(() => {
+        updateModalImage(placeId, currentIndex + direction, totalImages);
+      }, 100);
+    }
+  }
+}
+
+// 모달 이미지 업데이트
+function updateModalImage(placeId, newIndex, totalImages) {
+  // 인덱스 범위 조정
+  if (newIndex < 0) newIndex = totalImages - 1;
+  if (newIndex >= totalImages) newIndex = 0;
+  
+  // AJAX로 이미지 데이터 가져와서 모달 이미지 업데이트
+  const requestUrl = root + '/main/getPlaceImages.jsp?placeId=' + placeId;
+  
+  fetch(requestUrl)
+    .then(response => response.json())
+    .then(data => {
+      if (data.success && data.images && data.images.length > 0) {
+        const image = data.images[newIndex];
+        const timestamp = Date.now();
+        
+        // 모달 이미지 업데이트
+        const modalImg = document.getElementById('modalImage');
+        const modal = document.getElementById('imageModal');
+        
+        if (modalImg && modal) {
+          modalImg.src = 'http://localhost:8083' + root + image.imagePath + '?t=' + timestamp;
+          modal.setAttribute('data-current-index', newIndex);
+          
+          // 이미지 개수 표시 업데이트
+          const counter = document.getElementById('modalImageCounter');
+          if (counter) {
+            counter.textContent = (newIndex + 1) + ' / ' + totalImages;
+          }
+        }
+      }
+    })
+    .catch(error => {
+      // 에러 처리 (콘솔 출력 없음)
+    });
+}
 </script>
+
+<!-- 이미지 모달 -->
+<div id="imageModal" class="main-image-modal-overlay" onclick="closeImageModal()">
+    <div class="main-image-modal-content" onclick="event.stopPropagation()">
+        <button class="main-image-modal-close" onclick="closeImageModal()">&times;</button>
+        <img id="modalImage" class="main-image-modal-img" src="" alt="확대된 이미지">
+        
+        <!-- 좌우 화살표 버튼 -->
+        <button class="modal-nav-btn modal-prev-btn" onclick="changeModalImage(-1)">‹</button>
+        <button class="modal-nav-btn modal-next-btn" onclick="changeModalImage(1)">›</button>
+        
+        <!-- 이미지 개수 표시 -->
+        <div class="modal-image-counter" id="modalImageCounter"></div>
+    </div>
+</div>
