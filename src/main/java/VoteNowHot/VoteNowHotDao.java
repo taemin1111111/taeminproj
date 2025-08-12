@@ -2,7 +2,10 @@ package VoteNowHot;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 import DB.DbConnect;
 
 public class VoteNowHotDao {
@@ -69,5 +72,61 @@ public class VoteNowHotDao {
             e.printStackTrace();
         }
         return 0;
+    }
+
+    // 특정 장소의 투표 트렌드 조회 (가장 많이 투표된 옵션들)
+    public Map<String, String> getVoteTrends(int placeId) {
+        Map<String, String> trends = new HashMap<>();
+        
+        try (Connection conn = db.getConnection()) {
+            
+            // 1. 혼잡도 트렌드 조회
+            String sql1 = "SELECT congestion, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY congestion ORDER BY cnt DESC LIMIT 1";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql1)) {
+                pstmt.setInt(1, placeId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        trends.put("congestion", String.valueOf(rs.getInt("congestion")));
+                    } else {
+                        trends.put("congestion", "0"); // 데이터 없음
+                    }
+                }
+            }
+            
+            // 2. 성비 트렌드 조회
+            String sql2 = "SELECT gender_ratio, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY gender_ratio ORDER BY cnt DESC LIMIT 1";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql2)) {
+                pstmt.setInt(1, placeId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        trends.put("genderRatio", String.valueOf(rs.getInt("gender_ratio")));
+                    } else {
+                        trends.put("genderRatio", "0"); // 데이터 없음
+                    }
+                }
+            }
+            
+            // 3. 대기시간 트렌드 조회
+            String sql3 = "SELECT wait_time, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY wait_time ORDER BY cnt DESC LIMIT 1";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql3)) {
+                pstmt.setInt(1, placeId);
+                try (ResultSet rs = pstmt.executeQuery()) {
+                    if (rs.next()) {
+                        trends.put("waitTime", String.valueOf(rs.getInt("wait_time")));
+                    } else {
+                        trends.put("waitTime", "0"); // 데이터 없음
+                    }
+                }
+            }
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            // 에러 발생 시 기본값 설정
+            trends.put("congestion", "0");
+            trends.put("genderRatio", "0");
+            trends.put("waitTime", "0");
+        }
+        
+        return trends;
     }
 }

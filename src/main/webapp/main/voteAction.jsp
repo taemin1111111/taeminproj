@@ -16,8 +16,8 @@
     System.out.println("genderRatio=" + genderRatio);
     System.out.println("waitTime=" + waitTime);
     
-    // 3. 세션 userId 로그
-    String voterId = (String) session.getAttribute("userId");
+    // 3. 세션 loginid 로그
+    String voterId = (String) session.getAttribute("loginid");
     if (voterId == null) {
         voterId = request.getRemoteAddr(); // 비로그인 시 IP
     }

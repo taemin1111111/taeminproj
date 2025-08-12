@@ -230,7 +230,7 @@
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
     var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:12px;right:12px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div class="infoWindow" style="position:relative;padding:0; font-size:15px; line-height:1.5; min-width:280px; max-width:350px; border-radius:12px; overflow:hidden;">`
+      + `<div class="infoWindow" style="position:relative;padding:0; font-size:15px; line-height:1.5; min-width:320px; max-width:400px; border-radius:12px; overflow:hidden;">`
       +   '<div class="place-images-container" style="position:relative; width:100%; height:200px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:13px;" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
           
           '<div style="padding:16px;">'
@@ -238,6 +238,7 @@
       +       '<strong style="font-size:16px;">' + place.name + '</strong>'
       +       '<span style="color:#e91e63; font-size:14px;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
       +     '</div>'
+      +     '<div style="margin-bottom:8px; color:#888; font-size:12px;" id="voteTrends-' + place.id + '">📊 실시간 투표 현황: 로딩중...</div>'
       +     '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
       + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:8px; font-size:13px;">장르: ' + place.genres + '</div>' : '')
       +     '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
@@ -289,6 +290,11 @@
           setTimeout(function() {
             loadWishCount(place.id);
           }, 400);
+          
+          // 투표 현황 로드
+          setTimeout(function() {
+            loadVoteTrends(place.id);
+          }, 500);
           
 
           
@@ -1916,6 +1922,77 @@ function loadWishCount(placeId) {
     console.error('위시리스트 개수 로드 오류:', error);
     wishCountElement.textContent = '0';
   });
+}
+
+// 투표 현황 로드 함수
+function loadVoteTrends(placeId) {
+  const trendsElement = document.getElementById('voteTrends-' + placeId);
+  if (!trendsElement) return;
+  
+  const requestUrl = '<%=root%>/main/getVoteTrends.jsp';
+  const params = new URLSearchParams();
+  params.append('placeId', placeId);
+  
+  fetch(requestUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body: params
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success && data.trends) {
+      const trends = data.trends;
+      const congestionText = getCongestionText(trends.congestion);
+      const genderRatioText = getGenderRatioText(trends.genderRatio);
+      const waitTimeText = getWaitTimeText(trends.waitTime);
+      
+      trendsElement.innerHTML = '📊 실시간 투표 현황:<br>' +
+        '<span style="color:#888; font-size:11px;">' +
+        '#혼잡도:' + congestionText + ' ' +
+        '#성비:' + genderRatioText + ' ' +
+        '#대기시간:' + waitTimeText +
+        '</span>';
+    } else {
+      trendsElement.innerHTML = '📊 실시간 투표 현황: 투표 데이터 없음';
+    }
+  })
+  .catch(error => {
+    console.error('투표 현황 로드 오류:', error);
+    trendsElement.innerHTML = '📊 실시간 투표 현황: 로드 실패';
+  });
+}
+
+// 혼잡도 텍스트 변환 함수
+function getCongestionText(congestion) {
+  const congestionMap = {
+    '1': '한산함',
+    '2': '적당함', 
+    '3': '붐빔'
+  };
+  return congestionMap[congestion] || '데이터없음';
+}
+
+// 성비 텍스트 변환 함수
+function getGenderRatioText(genderRatio) {
+  const genderRatioMap = {
+    '1': '여초',
+    '2': '반반',
+    '3': '남초'
+  };
+  return genderRatioMap[genderRatio] || '데이터없음';
+}
+
+// 대기시간 텍스트 변환 함수
+function getWaitTimeText(waitTime) {
+  const waitTimeMap = {
+    '1': '바로입장',
+    '2': '10분정도',
+    '3': '30분',
+    '4': '1시간이상'
+  };
+  return waitTimeMap[waitTime] || '데이터없음';
 }
 
 // 이미지 업로드 처리 - 간단한 방식으로 변경
