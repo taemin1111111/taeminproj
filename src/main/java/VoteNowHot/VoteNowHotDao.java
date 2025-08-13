@@ -79,52 +79,61 @@ public class VoteNowHotDao {
         Map<String, String> trends = new HashMap<>();
         
         try (Connection conn = db.getConnection()) {
+            if (conn == null) {
+                return trends;
+            }
             
-            // 1. 혼잡도 트렌드 조회
-            String sql1 = "SELECT congestion, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY congestion ORDER BY cnt DESC LIMIT 1";
+            // 1. 혼잡도 트렌드 조회 - 가장 많이 투표된 옵션 (동점 시 최신 투표 우선)
+            String sql1 = "SELECT congestion, COUNT(*) as vote_count, MAX(voted_at) as latest_vote FROM vote_nowhot_log WHERE place_id = ? GROUP BY congestion ORDER BY vote_count DESC, MAX(voted_at) DESC LIMIT 1";
+            
             try (PreparedStatement pstmt = conn.prepareStatement(sql1)) {
                 pstmt.setInt(1, placeId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
-                        trends.put("congestion", String.valueOf(rs.getInt("congestion")));
+                        String congestion = rs.getString("congestion");
+                        trends.put("congestion", congestion);
                     } else {
-                        trends.put("congestion", "0"); // 데이터 없음
+                        trends.put("congestion", "");
                     }
                 }
             }
             
-            // 2. 성비 트렌드 조회
-            String sql2 = "SELECT gender_ratio, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY gender_ratio ORDER BY cnt DESC LIMIT 1";
+            // 2. 성비 트렌드 조회 - 가장 많이 투표된 옵션 (동점 시 최신 투표 우선)
+            String sql2 = "SELECT gender_ratio, COUNT(*) as vote_count, MAX(voted_at) as latest_vote FROM vote_nowhot_log WHERE place_id = ? GROUP BY gender_ratio ORDER BY vote_count DESC, MAX(voted_at) DESC LIMIT 1";
+            
             try (PreparedStatement pstmt = conn.prepareStatement(sql2)) {
                 pstmt.setInt(1, placeId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
-                        trends.put("genderRatio", String.valueOf(rs.getInt("gender_ratio")));
+                        String genderRatio = rs.getString("gender_ratio");
+                        trends.put("genderRatio", genderRatio);
                     } else {
-                        trends.put("genderRatio", "0"); // 데이터 없음
+                        trends.put("genderRatio", "");
                     }
                 }
             }
             
-            // 3. 대기시간 트렌드 조회
-            String sql3 = "SELECT wait_time, COUNT(*) as cnt FROM vote_nowhot_log WHERE place_id = ? GROUP BY wait_time ORDER BY cnt DESC LIMIT 1";
+            // 3. 대기시간 트렌드 조회 - 가장 많이 투표된 옵션 (동점 시 최신 투표 우선)
+            String sql3 = "SELECT wait_time, COUNT(*) as vote_count, MAX(voted_at) as latest_vote FROM vote_nowhot_log WHERE place_id = ? GROUP BY wait_time ORDER BY vote_count DESC, MAX(voted_at) DESC LIMIT 1";
+            
             try (PreparedStatement pstmt = conn.prepareStatement(sql3)) {
                 pstmt.setInt(1, placeId);
                 try (ResultSet rs = pstmt.executeQuery()) {
                     if (rs.next()) {
-                        trends.put("waitTime", String.valueOf(rs.getInt("wait_time")));
+                        String waitTime = rs.getString("wait_time");
+                        trends.put("waitTime", waitTime);
                     } else {
-                        trends.put("waitTime", "0"); // 데이터 없음
+                        trends.put("waitTime", "");
                     }
                 }
             }
             
         } catch (Exception e) {
             e.printStackTrace();
-            // 에러 발생 시 기본값 설정
-            trends.put("congestion", "0");
-            trends.put("genderRatio", "0");
-            trends.put("waitTime", "0");
+            // 에러 발생 시 빈 값 설정
+            trends.put("congestion", "");
+            trends.put("genderRatio", "");
+            trends.put("waitTime", "");
         }
         
         return trends;

@@ -230,19 +230,19 @@
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
     var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:12px;right:12px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div class="infoWindow" style="position:relative;padding:0; font-size:15px; line-height:1.5; min-width:320px; max-width:400px; border-radius:12px; overflow:hidden;">`
-      +   '<div class="place-images-container" style="position:relative; width:100%; height:200px; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:13px;" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
+      + `<div class="infoWindow" style="position:relative; padding:0; font-size:clamp(12px, 2vw, 16px); line-height:1.4; min-width:380px; max-width:90vw; width:clamp(380px, 450px, 90vw); border-radius:12px; overflow:hidden; box-sizing:border-box;">`
+      +   '<div class="place-images-container" style="position:relative; width:100%; height:clamp(150px, 25vh, 200px); background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:clamp(11px, 1.5vw, 13px);" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
           
-          '<div style="padding:16px;">'
-      +     '<div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">'
-      +       '<strong style="font-size:16px;">' + place.name + '</strong>'
-      +       '<span style="color:#e91e63; font-size:14px;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
+          '<div style="padding:clamp(16px, 3vw, 24px);">'
+      +     '<div style="display:flex; align-items:center; gap:clamp(8px, 1.5vw, 12px); margin-bottom:clamp(10px, 2vw, 16px); flex-wrap:wrap;">'
+      +       '<strong style="font-size:clamp(14px, 2.5vw, 18px); word-break:break-word; flex:1; min-width:0;">' + place.name + '</strong>'
+      +       '<span style="color:#e91e63; font-size:clamp(12px, 2vw, 14px); white-space:nowrap;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
       +     '</div>'
-      +     '<div style="margin-bottom:8px; color:#888; font-size:12px;" id="voteTrends-' + place.id + '">📊 실시간 투표 현황: 로딩중...</div>'
-      +     '<div style="margin-bottom:8px; color:#666; font-size:13px;">' + place.address + '</div>'
-      + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:8px; font-size:13px;">장르: ' + place.genres + '</div>' : '')
-      +     '<div style="margin-top:12px;"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500;">🔥 투표하기</a>'
-      + (isAdmin && place.categoryId === 1 ? '&nbsp;&nbsp;<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:12px;">✏️ 장르 편집</a>' : '') + '</div>'
+      +     '<div style="margin-bottom:clamp(10px, 2vw, 16px); color:#888; font-size:clamp(10px, 1.8vw, 12px); word-break:break-word;" id="voteTrends-' + place.id + '">📊 역대 투표: 로딩중...</div>'
+      +     '<div style="margin-bottom:clamp(10px, 2vw, 16px); color:#666; font-size:clamp(11px, 2vw, 13px); word-break:break-word; line-height:1.3;">' + place.address + '</div>'
+      + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:clamp(10px, 2vw, 16px); font-size:clamp(11px, 2vw, 13px); word-break:break-word;">장르: ' + place.genres + '</div>' : '')
+      +     '<div style="margin-top:clamp(16px, 3vw, 24px); display:flex; flex-wrap:wrap; gap:clamp(10px, 2vw, 16px);"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500; font-size:clamp(12px, 2vw, 14px); white-space:nowrap; padding:10px 16px; background:#f0f8ff; border-radius:8px; display:inline-block; border:1px solid #e3f2fd; transition:all 0.2s ease;">🔥 투표하기</a>'
+      + (isAdmin && place.categoryId === 1 ? '<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:clamp(10px, 1.8vw, 12px); white-space:nowrap; padding:8px 14px; background:#fff3e0; border-radius:6px; display:inline-block; border:1px solid #ffe0b2; transition:all 0.2s ease;">✏️ 장르 편집</a>' : '') + '</div>'
       +   '</div>'
       + '</div>';
     var infowindow = new kakao.maps.InfoWindow({ content: infoContent });
@@ -1927,7 +1927,9 @@ function loadWishCount(placeId) {
 // 투표 현황 로드 함수
 function loadVoteTrends(placeId) {
   const trendsElement = document.getElementById('voteTrends-' + placeId);
-  if (!trendsElement) return;
+  if (!trendsElement) {
+    return;
+  }
   
   const requestUrl = '<%=root%>/main/getVoteTrends.jsp';
   const params = new URLSearchParams();
@@ -1944,55 +1946,46 @@ function loadVoteTrends(placeId) {
   .then(data => {
     if (data.success && data.trends) {
       const trends = data.trends;
+      
       const congestionText = getCongestionText(trends.congestion);
       const genderRatioText = getGenderRatioText(trends.genderRatio);
       const waitTimeText = getWaitTimeText(trends.waitTime);
       
-      trendsElement.innerHTML = '📊 실시간 투표 현황:<br>' +
+      trendsElement.innerHTML = '📊 역대 투표:<br>' +
         '<span style="color:#888; font-size:11px;">' +
         '#혼잡도:' + congestionText + ' ' +
         '#성비:' + genderRatioText + ' ' +
         '#대기시간:' + waitTimeText +
         '</span>';
     } else {
-      trendsElement.innerHTML = '📊 실시간 투표 현황: 투표 데이터 없음';
+      trendsElement.innerHTML = '📊 역대 투표: 투표 데이터 없음';
     }
   })
   .catch(error => {
     console.error('투표 현황 로드 오류:', error);
-    trendsElement.innerHTML = '📊 실시간 투표 현황: 로드 실패';
+    trendsElement.innerHTML = '📊 역대 투표: 로드 실패';
   });
 }
 
 // 혼잡도 텍스트 변환 함수
 function getCongestionText(congestion) {
-  const congestionMap = {
-    '1': '한산함',
-    '2': '적당함', 
-    '3': '붐빔'
-  };
-  return congestionMap[congestion] || '데이터없음';
+  if (!congestion || congestion === '') return '데이터없음';
+  // 한글 문자열을 그대로 반환
+  return congestion;
 }
 
 // 성비 텍스트 변환 함수
 function getGenderRatioText(genderRatio) {
-  const genderRatioMap = {
-    '1': '여초',
-    '2': '반반',
-    '3': '남초'
-  };
-  return genderRatioMap[genderRatio] || '데이터없음';
+  if (!genderRatio || genderRatio === '') return '데이터없음';
+  // 한글 문자열을 그대로 반환
+  return genderRatio;
 }
 
 // 대기시간 텍스트 변환 함수
 function getWaitTimeText(waitTime) {
-  const waitTimeMap = {
-    '1': '바로입장',
-    '2': '10분정도',
-    '3': '30분',
-    '4': '1시간이상'
-  };
-  return waitTimeMap[waitTime] || '데이터없음';
+  if (!waitTime || waitTime === '') return '데이터없음';
+  // 한글 문자열을 그대로 반환
+  return waitTime;
 }
 
 // 이미지 업로드 처리 - 간단한 방식으로 변경

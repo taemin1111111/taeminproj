@@ -635,3 +635,79 @@ hr.divider {
     z-index: 2001;
 }
 
+/* ✅ InfoWindow 반응형 스타일 */
+.infoWindow {
+    box-sizing: border-box !important;
+    word-wrap: break-word !important;
+    overflow-wrap: break-word !important;
+}
+
+.infoWindow * {
+    box-sizing: border-box !important;
+}
+
+/* 작은 화면에서의 InfoWindow 최적화 */
+@media (max-width: 480px) {
+    .infoWindow {
+        min-width: 280px !important;
+        max-width: 95vw !important;
+        width: 95vw !important;
+    }
+    
+    .infoWindow .place-images-container {
+        height: 120px !important;
+    }
+    
+    .infoWindow strong {
+        font-size: 14px !important;
+    }
+    
+    .infoWindow span,
+    .infoWindow div {
+        font-size: 11px !important;
+    }
+}
+
+/* 중간 화면에서의 InfoWindow 최적화 */
+@media (min-width: 481px) and (max-width: 768px) {
+    .infoWindow {
+        min-width: 320px !important;
+        max-width: 80vw !important;
+        width: clamp(320px, 400px, 80vw) !important;
+    }
+}
+
+/* 큰 화면에서의 InfoWindow 최적화 */
+@media (min-width: 769px) {
+    .infoWindow {
+        min-width: 380px !important;
+        max-width: 480px !important;
+        width: 480px !important;
+    }
+}
+
+/* InfoWindow 내부 요소들의 텍스트 오버플로우 방지 */
+.infoWindow strong,
+.infoWindow div,
+.infoWindow span {
+    max-width: 100% !important;
+    overflow-wrap: break-word !important;
+    word-break: break-word !important;
+}
+
+/* InfoWindow 내부 링크들의 반응형 처리 */
+.infoWindow a {
+    display: inline-block !important;
+    max-width: 100% !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+/* InfoWindow 이미지 컨테이너 반응형 */
+.infoWindow .place-images-container {
+    background-size: cover !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+}
+
