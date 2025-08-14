@@ -1,0 +1,112 @@
+[1mdiff --git a/src/main/webapp/css/all.css b/src/main/webapp/css/all.css[m
+[1mindex 7aa06f4..bbaeeba 100644[m
+[1m--- a/src/main/webapp/css/all.css[m
+[1m+++ b/src/main/webapp/css/all.css[m
+[36m@@ -649,13 +649,13 @@[m [mhr.divider {[m
+ /* 작은 화면에서의 InfoWindow 최적화 */[m
+ @media (max-width: 480px) {[m
+     .infoWindow {[m
+[31m-        min-width: 280px !important;[m
+[31m-        max-width: 95vw !important;[m
+[31m-        width: 95vw !important;[m
+[32m+[m[32m        min-width: 260px !important;[m
+[32m+[m[32m        max-width: 90vw !important;[m
+[32m+[m[32m        width: 90vw !important;[m
+     }[m
+     [m
+     .infoWindow .place-images-container {[m
+[31m-        height: 120px !important;[m
+[32m+[m[32m        height: 140px !important;[m
+     }[m
+     [m
+     .infoWindow strong {[m
+[36m@@ -671,18 +671,26 @@[m [mhr.divider {[m
+ /* 중간 화면에서의 InfoWindow 최적화 */[m
+ @media (min-width: 481px) and (max-width: 768px) {[m
+     .infoWindow {[m
+[31m-        min-width: 320px !important;[m
+[31m-        max-width: 80vw !important;[m
+[31m-        width: clamp(320px, 400px, 80vw) !important;[m
+[32m+[m[32m        min-width: 280px !important;[m
+[32m+[m[32m        max-width: 70vw !important;[m
+[32m+[m[32m        width: clamp(280px, 320px, 70vw) !important;[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    .infoWindow .place-images-container {[m
+[32m+[m[32m        height: 160px !important;[m
+     }[m
+ }[m
+ [m
+ /* 큰 화면에서의 InfoWindow 최적화 */[m
+ @media (min-width: 769px) {[m
+     .infoWindow {[m
+[31m-        min-width: 380px !important;[m
+[31m-        max-width: 480px !important;[m
+[31m-        width: 480px !important;[m
+[32m+[m[32m        min-width: 280px !important;[m
+[32m+[m[32m        max-width: 320px !important;[m
+[32m+[m[32m        width: 320px !important;[m
+[32m+[m[32m    }[m
+[32m+[m[41m    [m
+[32m+[m[32m    .infoWindow .place-images-container {[m
+[32m+[m[32m        height: 180px !important;[m
+     }[m
+ }[m
+ [m
+[36m@@ -697,11 +705,36 @@[m [mhr.divider {[m
+ [m
+ /* InfoWindow 내부 링크들의 반응형 처리 */[m
+ .infoWindow a {[m
+[31m-    display: inline-block !important;[m
+[32m+[m[32m    display: block !important;[m
+     max-width: 100% !important;[m
+     white-space: nowrap !important;[m
+     overflow: hidden !important;[m
+     text-overflow: ellipsis !important;[m
+[32m+[m[32m    text-align: center !important;[m
+[32m+[m[32m    margin-bottom: 8px !important;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m/* InfoWindow 버튼 hover 효과 강화 */[m
+[32m+[m[32m.infoWindow a[onclick*="showVoteSection"] {[m
+[32m+[m[32m    transition: all 0.3s ease !important;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.infoWindow a[onclick*="showVoteSection"]:hover {[m
+[32m+[m[32m    background: #e3f2fd !important;[m
+[32m+[m[32m    border-color: #1275E0 !important;[m
+[32m+[m[32m    transform: translateY(-2px) !important;[m
+[32m+[m[32m    box-shadow: 0 4px 12px rgba(18, 117, 224, 0.3) !important;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.infoWindow a[onclick*="openGenreEditModal"] {[m
+[32m+[m[32m    transition: all 0.3s ease !important;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.infoWindow a[onclick*="openGenreEditModal"]:hover {[m
+[32m+[m[32m    background: #ffe0b2 !important;[m
+[32m+[m[32m    border-color: #ff6b35 !important;[m
+[32m+[m[32m    transform: translateY(-2px) !important;[m
+[32m+[m[32m    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;[m
+ }[m
+ [m
+ /* InfoWindow 이미지 컨테이너 반응형 */[m
+[36m@@ -711,3 +744,18 @@[m [mhr.divider {[m
+     background-repeat: no-repeat !important;[m
+ }[m
+ [m
+[32m+[m[32m/* InfoWindow 내부 레이아웃 최적화 */[m
+[32m+[m[32m.infoWindow .place-name-wish-container {[m
+[32m+[m[32m    display: flex !important;[m
+[32m+[m[32m    flex-direction: column !important;[m
+[32m+[m[32m    gap: 6px !important;[m
+[32m+[m[32m    margin-bottom: 12px !important;[m
+[32m+[m[32m}[m
+[32m+[m
+[32m+[m[32m.infoWindow .action-buttons-container {[m
+[32m+[m[32m    display: flex !important;[m
+[32m+[m[32m    flex-direction: column !important;[m
+[32m+[m[32m    gap: 8px !important;[m
+[32m+[m[32m    margin-top: 16px !important;[m
+[32m+[m[32m}[m
+[32m+[m

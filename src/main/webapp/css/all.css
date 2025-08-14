@@ -649,13 +649,13 @@ hr.divider {
 /* 작은 화면에서의 InfoWindow 최적화 */
 @media (max-width: 480px) {
     .infoWindow {
-        min-width: 280px !important;
-        max-width: 95vw !important;
-        width: 95vw !important;
+        min-width: 260px !important;
+        max-width: 90vw !important;
+        width: 90vw !important;
     }
     
     .infoWindow .place-images-container {
-        height: 120px !important;
+        height: 140px !important;
     }
     
     .infoWindow strong {
@@ -671,18 +671,26 @@ hr.divider {
 /* 중간 화면에서의 InfoWindow 최적화 */
 @media (min-width: 481px) and (max-width: 768px) {
     .infoWindow {
-        min-width: 320px !important;
-        max-width: 80vw !important;
-        width: clamp(320px, 400px, 80vw) !important;
+        min-width: 280px !important;
+        max-width: 70vw !important;
+        width: clamp(280px, 320px, 70vw) !important;
+    }
+    
+    .infoWindow .place-images-container {
+        height: 160px !important;
     }
 }
 
 /* 큰 화면에서의 InfoWindow 최적화 */
 @media (min-width: 769px) {
     .infoWindow {
-        min-width: 380px !important;
-        max-width: 480px !important;
-        width: 480px !important;
+        min-width: 280px !important;
+        max-width: 320px !important;
+        width: 320px !important;
+    }
+    
+    .infoWindow .place-images-container {
+        height: 180px !important;
     }
 }
 
@@ -697,11 +705,42 @@ hr.divider {
 
 /* InfoWindow 내부 링크들의 반응형 처리 */
 .infoWindow a {
-    display: inline-block !important;
+    display: block !important;
     max-width: 100% !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+    text-align: center !important;
+    margin-bottom: 8px !important;
+}
+
+/* InfoWindow 버튼 hover 효과 강화 */
+.infoWindow a[onclick*="showVoteSection"] {
+    transition: all 0.3s ease !important;
+    background: linear-gradient(135deg, #ff6b9d, #ff85a2) !important;
+    border-color: #ff6b9d !important;
+    color: white !important;
+    font-weight: 600 !important;
+    border-radius: 25px !important;
+    box-shadow: 0 4px 15px rgba(255, 107, 157, 0.25) !important;
+}
+
+.infoWindow a[onclick*="showVoteSection"]:hover {
+    background: linear-gradient(135deg, #ff5a8c, #ff6b9d) !important;
+    border-color: #ff5a8c !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 6px 20px rgba(255, 107, 157, 0.4) !important;
+}
+
+.infoWindow a[onclick*="openGenreEditModal"] {
+    transition: all 0.3s ease !important;
+}
+
+.infoWindow a[onclick*="openGenreEditModal"]:hover {
+    background: #ffe0b2 !important;
+    border-color: #ff6b35 !important;
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
 }
 
 /* InfoWindow 이미지 컨테이너 반응형 */
@@ -709,5 +748,37 @@ hr.divider {
     background-size: cover !important;
     background-position: center !important;
     background-repeat: no-repeat !important;
+}
+
+/* InfoWindow 내부 레이아웃 최적화 */
+.infoWindow .place-name-wish-container {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+}
+
+.infoWindow .action-buttons-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    margin-top: 16px !important;
+    padding-bottom: 16px !important;
+}
+
+/* InfoWindow 내 "역대 투표:" 텍스트 크기 증가 */
+.infoWindow div[id*="voteTrends"] {
+    font-size: 16px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    margin-bottom: 8px !important;
+}
+
+/* InfoWindow 내 "장르:" 텍스트 앞에 음표 이모티콘 추가 */
+.infoWindow div[style*="color:#9c27b0"][style*="장르:"]::before {
+    content: "🎵 ";
+    color: #9c27b0;
+    margin-right: 4px;
 }
 

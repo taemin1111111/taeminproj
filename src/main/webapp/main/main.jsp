@@ -230,20 +230,19 @@
     // 하트 아이콘(위시리스트) 추가: 오른쪽 위 (i 태그, .wish-heart)
     var heartHtml = isLoggedIn ? `<i class="bi bi-heart wish-heart" data-place-id="${place.id}" style="position:absolute;top:12px;right:12px;z-index:10;"></i>` : '';
     var infoContent = ''
-      + `<div class="infoWindow" style="position:relative; padding:0; font-size:clamp(12px, 2vw, 16px); line-height:1.4; min-width:380px; max-width:90vw; width:clamp(380px, 450px, 90vw); border-radius:12px; overflow:hidden; box-sizing:border-box;">`
-      +   '<div class="place-images-container" style="position:relative; width:100%; height:clamp(150px, 25vh, 200px); background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:clamp(11px, 1.5vw, 13px);" data-place-id="' + place.id + '">이미지 로딩 중...</div>' +
-          
-          '<div style="padding:clamp(16px, 3vw, 24px);">'
-      +     '<div style="display:flex; align-items:center; gap:clamp(8px, 1.5vw, 12px); margin-bottom:clamp(10px, 2vw, 16px); flex-wrap:wrap;">'
-      +       '<strong style="font-size:clamp(14px, 2.5vw, 18px); word-break:break-word; flex:1; min-width:0;">' + place.name + '</strong>'
-      +       '<span style="color:#e91e63; font-size:clamp(12px, 2vw, 14px); white-space:nowrap;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
-      +     '</div>'
-      +     '<div style="margin-bottom:clamp(10px, 2vw, 16px); color:#888; font-size:clamp(10px, 1.8vw, 12px); word-break:break-word;" id="voteTrends-' + place.id + '">📊 역대 투표: 로딩중...</div>'
-      +     '<div style="margin-bottom:clamp(10px, 2vw, 16px); color:#666; font-size:clamp(11px, 2vw, 13px); word-break:break-word; line-height:1.3;">' + place.address + '</div>'
-      + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:clamp(10px, 2vw, 16px); font-size:clamp(11px, 2vw, 13px); word-break:break-word;">장르: ' + place.genres + '</div>' : '')
-      +     '<div style="margin-top:clamp(16px, 3vw, 24px); display:flex; flex-wrap:wrap; gap:clamp(10px, 2vw, 16px);"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500; font-size:clamp(12px, 2vw, 14px); white-space:nowrap; padding:10px 16px; background:#f0f8ff; border-radius:8px; display:inline-block; border:1px solid #e3f2fd; transition:all 0.2s ease;">🔥 투표하기</a>'
-      + (isAdmin && place.categoryId === 1 ? '<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:clamp(10px, 1.8vw, 12px); white-space:nowrap; padding:8px 14px; background:#fff3e0; border-radius:6px; display:inline-block; border:1px solid #ffe0b2; transition:all 0.2s ease;">✏️ 장르 편집</a>' : '') + '</div>'
-      +   '</div>'
+      + '<div class="infoWindow" style="position:relative; padding:0; font-size:clamp(12px, 2vw, 16px); line-height:1.4; border-radius:12px; overflow:hidden; box-sizing:border-box;">'
+      + '<div class="place-images-container" style="position:relative; width:100%; background:#f8f9fa; display:flex; align-items:center; justify-content:center; color:#6c757d; font-size:clamp(11px, 1.5vw, 13px);" data-place-id="' + place.id + '">이미지 로딩 중...</div>'
+      + '<div style="padding:clamp(16px, 3vw, 20px);">'
+      + '<div class="place-name-wish-container">'
+      + '<strong style="font-size:clamp(14px, 2.5vw, 18px); word-break:break-word;">' + place.name + '</strong>'
+      + '<span style="color:#e91e63; font-size:clamp(12px, 2vw, 14px); white-space:nowrap;">💖<span class="wish-count-' + place.id + '" style="color:#e91e63; font-weight:600;">로딩중...</span>명</span>'
+      + '</div>'
+      + '<div style="margin-bottom:clamp(10px, 2vw, 14px); color:#888; font-size:clamp(10px, 1.8vw, 12px); word-break:break-word;" id="voteTrends-' + place.id + '">📊 역대 투표: 로딩중...</div>'
+      + '<div style="margin-bottom:clamp(10px, 2vw, 14px); color:#666; font-size:clamp(11px, 2vw, 13px); word-break:break-word; line-height:1.3;">' + place.address + '</div>'
+      + (place.genres && place.genres !== '' ? '<div style="color:#9c27b0; font-weight:600; margin-bottom:clamp(10px, 2vw, 14px); font-size:clamp(11px, 2vw, 13px); word-break:break-word;">🎵 장르: ' + place.genres + '</div>' : '')
+      + '<div class="action-buttons-container"><a href="#" onclick="showVoteSection(' + place.id + ', \'' + place.name + '\', \'' + place.address + '\', ' + place.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-weight:500; font-size:clamp(12px, 2vw, 14px); white-space:nowrap; padding:10px 16px; background:#f0f8ff; border-radius:8px; border:1px solid #e3f2fd;">🔥 투표하기</a>'
+      + (isAdmin && place.categoryId === 1 ? '<a href="#" onclick="openGenreEditModal(' + place.id + ', \'' + place.name + '\'); return false;" style="color:#ff6b35; text-decoration:none; font-size:clamp(10px, 1.8vw, 12px); white-space:nowrap; padding:8px 14px; background:#fff3e0; border-radius:6px; border:1px solid #ffe0b2;">✏️ 장르 편집</a>' : '') + '</div>'
+      + '</div>'
       + '</div>';
     var infowindow = new kakao.maps.InfoWindow({ content: infoContent });
     kakao.maps.event.addListener(marker, 'click', function() {
@@ -761,7 +760,7 @@
         searchResultBox.innerHTML = matchedHotplaces.map(function(h) {
           var heartHtml = isLoggedIn ? '<i class="bi bi-heart wish-heart" data-place-id="'+h.id+'" style="font-size:1.25rem; color:#e74c3c; cursor:pointer;"></i>' : '<i class="bi bi-heart wish-heart" style="font-size:1.25rem; color:#bbb; cursor:pointer;"></i>';
           var voteButtonHtml = '<a href="#" onclick="showVoteSection(' + h.id + ', \'' + h.name + '\', \'' + h.address + '\', ' + h.categoryId + '); return false;" style="color:#1275E0; text-decoration:none; font-size:0.95rem;">🔥 투표</a>';
-          var genreHtml = (h.genres && h.genres !== '') ? '<div style="color:#9c27b0; font-weight:600; margin-top:2px; font-size:0.9rem;">장르: ' + h.genres + '</div>' : '';
+          var genreHtml = (h.genres && h.genres !== '') ? '<div style="color:#9c27b0; font-weight:600; margin-top:2px; font-size:0.9rem;">🎵 장르: ' + h.genres + '</div>' : '';
           return '<div class="hotplace-list-card">'
             + '<div style="flex:1; min-width:0;">'
             +   '<div style="display:flex; align-items:center; gap:6px;">'
